@@ -2,9 +2,9 @@
 #include "Object.h"
 #include "Resources.h"
 
+#include "Coin.h"
 #include "Enemy.h"
 #include "Game.h"
-#include "Coin.h"
 #include <Box2D/Collision/Shapes/CircleShape.hpp>
 #include <Box2D/Collision/Shapes/PolygonShape.hpp>
 #include <Box2D/Dynamics/Fixture.hpp>
@@ -31,6 +31,7 @@ void Mario::Begin() {
   b2::BodyDef bodyDef{};
   bodyDef.type = b2::BodyType::dynamicBody;
   bodyDef.position = b2::Vec2(position.x, position.y);
+  bodyDef.fixedRotation = true;
   body = Physics::world->CreateBody(&bodyDef);
 
   b2::CircleShape circleShape;
@@ -49,7 +50,8 @@ void Mario::Begin() {
 
   // Create a smaller ground sensor at the bottom of Mario's feet
   b2::PolygonShape groundSensorShape;
-  groundSensorShape.SetAsBox(0.2f, 0.05f, b2::Vec2(0.0f, 0.6f), 0.0f);  // Уменьшаем размер и опускаем ниже
+  groundSensorShape.SetAsBox(0.2f, 0.05f, b2::Vec2(0.0f, 0.6f),
+                             0.0f); // Уменьшаем размер и опускаем ниже
   fixtureDef.shape = &groundSensorShape;
   fixtureDef.isSensor = true;
   groundFixture = body->CreateFixture(&fixtureDef);
@@ -70,7 +72,9 @@ void Mario::Update(float deltaTime) {
     velocity.x += move;
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
     velocity.x -= move;
-  if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) && isGrounded) {
+  if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ||
+       sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) &&
+      isGrounded) {
     velocity.y = -jumpVelocity;
     jumpSound.play();
   }
@@ -136,9 +140,11 @@ void Mario::OnEndContact(b2::Fixture *self, b2::Fixture *other) {
   if (!data)
     return;
 
-  if (groundFixture == self && data->type == FixtureDataType::MapTile && isGrounded > 0) {
+  if (groundFixture == self && data->type == FixtureDataType::MapTile &&
+      isGrounded > 0) {
     isGrounded--;
-    std::cout << "Ground contact ended! isGrounded = " << isGrounded << std::endl;
+    std::cout << "Ground contact ended! isGrounded = " << isGrounded
+              << std::endl;
   }
 }
 
