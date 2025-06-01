@@ -34,6 +34,7 @@ void Coin::Begin() {
 
   b2::BodyDef bodyDef{};
   bodyDef.type = b2::BodyType::dynamicBody;
+  bodyDef.gravityScale = 0.0f;
   bodyDef.position = b2::Vec2(position.x, position.y);
   body = Physics::world->CreateBody(&bodyDef);
 

@@ -27,6 +27,7 @@ struct FixtureData {
     Object *object;
     struct {
       int mapX, mapY;
+      b2::Body* body;
     };
   };
 };

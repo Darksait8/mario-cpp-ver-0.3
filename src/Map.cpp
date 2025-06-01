@@ -51,6 +51,18 @@ sf::Vector2f Map::CreateFromImage(const sf::Image &image,
         object = new Coin();
       } else if (color == sf::Color::Blue) {
         object = new Enemy();
+      } else if (
+          std::abs(color.r - 255) <= 5 &&
+          std::abs(color.g - 165) <= 5 &&
+          std::abs(color.b - 0) <= 5 &&
+          color.a == 255) {
+        grid[x][y] = &Resources::textures["kirpich.png"];
+      } else if (
+          std::abs(color.r - 220) <= 5 &&
+          std::abs(color.g - 220) <= 5 &&
+          std::abs(color.b - 220) <= 5 &&
+          color.a == 255) {
+        grid[x][y] = &Resources::textures["monetki.png"];
       }
 
       if (object) {
@@ -69,6 +81,7 @@ sf::Vector2f Map::CreateFromImage(const sf::Image &image,
         fixtureData->type = FixtureDataType::MapTile;
         fixtureData->mapX = x;
         fixtureData->mapY = y;
+        fixtureData->body = body;
         fixtureData->listener = nullptr;
 
         b2::FixtureDef fixtureDef{};

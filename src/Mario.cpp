@@ -1,14 +1,16 @@
+#define _USE_MATH_DEFINES
 #include "Mario.h"
 #include "Object.h"
 #include "Resources.h"
+#include "Map.h"
 
 #include "Coin.h"
 #include "Enemy.h"
-#include "Game.h"
 #include <Box2D/Collision/Shapes/CircleShape.hpp>
 #include <Box2D/Collision/Shapes/PolygonShape.hpp>
 #include <Box2D/Dynamics/Fixture.hpp>
 #include <iostream>
+#include <cmath>
 
 const float movementSpeed = 7.0f;
 const float jumpVelocity = 10.0f;
@@ -105,6 +107,8 @@ void Mario::Draw(Renderer &renderer) {
 void Mario::OnBeginContact(b2::Fixture *self, b2::Fixture *other) {
   FixtureData *data = static_cast<FixtureData *>(other->GetUserData());
 
+  std::cout << "Mario BeginContact! Self type: " << static_cast<int>(((FixtureData*)self->GetUserData())->type) << ", Other type: " << (data ? static_cast<int>(data->type) : -1) << ", Self fixture: " << (self == groundFixture ? "ground" : "other") << std::endl;
+
   if (!data)
     return;
 
@@ -122,13 +126,16 @@ void Mario::OnBeginContact(b2::Fixture *self, b2::Fixture *other) {
     }
   } else if (data->type == FixtureDataType::Object &&
              data->object->tag == "enemy") {
+    std::cout << "Contact with object tag: " << data->object->tag << std::endl;
     Enemy *enemy = dynamic_cast<Enemy *>(data->object);
     if (!enemy || enemy->IsDead())
       return;
 
     if (groundFixture == self) {
+      std::cout << "Mario stomped on enemy!" << std::endl;
       enemy->Die();
     } else if (!enemy->IsDead()) {
+      std::cout << "Mario touched enemy and should die!" << std::endl;
       isDead = true;
     }
   }

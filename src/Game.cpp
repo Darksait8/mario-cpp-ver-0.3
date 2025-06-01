@@ -80,13 +80,13 @@ void Begin() {
   data->backgroundShape.setFillColor(sf::Color(0, 0, 0, 150));
   data->backgroundShape.setOrigin(0.5f, 0.5f);
 
-  data->mapImage.loadFromFile("./resources/map.png");
+  data->mapImage.loadFromFile("./resources/level1.png");
 
   Restart();
 }
 
 void Update(float deltaTime) {
-  if (data->mario.isDead && sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+  if (data->mario.isDead)
     Restart();
 
   if (data->paused)
