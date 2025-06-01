@@ -3,9 +3,13 @@
 #include "Mario.h"
 #include "Physics.h"
 #include "Resources.h"
+#include "Enemy.h"
+#include "Coin.h"
 
 #include <filesystem>
 #include <SFML/Audio.hpp>
+
+class Coin; // Forward declaration
 
 struct Data {
   Map map{1.0f};
@@ -85,12 +89,28 @@ void Update(float deltaTime) {
   if (data->mario.isDead && sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
     Restart();
 
-  if (data->mario.isDead || data->paused)
+  if (data->paused)
     return;
 
   Physics::Update(deltaTime);
   data->mario.Update(deltaTime);
   data->camera.position = data->mario.position;
+
+  // Удаляем объекты, помеченные как isDead, после шага физики
+  data->objects.erase(
+      std::remove_if(data->objects.begin(), data->objects.end(),
+                     [](Object *obj) { 
+                       // Удаляем врагов, помеченных как isDead
+                       if (obj->tag == "enemy") {
+                         return dynamic_cast<Enemy*>(obj)->IsDead();
+                       }
+                       // Удаляем монетки, помеченные как isCollected
+                       if (obj->tag == "coin") {
+                         return dynamic_cast<Coin*>(obj)->isCollected;
+                       }
+                       return false; // Не удаляем другие объекты
+                     }),
+      data->objects.end());
 
   for (auto &object : data->objects) {
     object->Update(deltaTime);

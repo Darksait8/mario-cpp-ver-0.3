@@ -31,6 +31,23 @@ struct FixtureData {
   };
 };
 
+enum CollisionCategory {
+    CATEGORY_NOTHING = 0,
+    CATEGORY_MARIO = 0x0001,
+    CATEGORY_MAP_TILE = 0x0002,
+    CATEGORY_ENEMY = 0x0004,
+    CATEGORY_COIN = 0x0008,
+    CATEGORY_MARIO_GROUND_SENSOR = 0x0010,
+};
+
+// Наш класс слушателя контактов для Box2D мира
+class MyContactListener : public b2::ContactListener
+{
+public:
+    void BeginContact(b2::Contact* contact) override;
+    void EndContact(b2::Contact* contact) override;
+};
+
 class Physics {
 public:
   static void Init();

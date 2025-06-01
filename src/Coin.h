@@ -12,6 +12,8 @@ public:
   virtual void Update(float deltaTime) override;
   virtual void Render(Renderer &renderer) override;
 
+  bool isCollected = false; // Флаг для отложенного удаления
+
 private:
   FixtureData fixtureData;
   Animation animation;

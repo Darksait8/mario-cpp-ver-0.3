@@ -42,6 +42,7 @@ void Coin::Begin() {
 
   fixtureData.type = FixtureDataType::Object;
   fixtureData.object = this;
+  fixtureData.listener = nullptr;
 
   b2::FixtureDef fixtureDef{};
   fixtureDef.shape = &shape;

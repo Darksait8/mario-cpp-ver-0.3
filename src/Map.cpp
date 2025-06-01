@@ -69,6 +69,7 @@ sf::Vector2f Map::CreateFromImage(const sf::Image &image,
         fixtureData->type = FixtureDataType::MapTile;
         fixtureData->mapX = x;
         fixtureData->mapY = y;
+        fixtureData->listener = nullptr;
 
         b2::FixtureDef fixtureDef{};
         fixtureDef.shape = &shape;

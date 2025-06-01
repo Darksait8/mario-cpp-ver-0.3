@@ -17,6 +17,7 @@ void Enemy::Begin() {
 
   fixtureData.object = this;
   fixtureData.type = FixtureDataType::Object;
+  fixtureData.listener = nullptr;
 
   b2::BodyDef bodyDef{};
   bodyDef.type = b2::BodyType::dynamicBody;
@@ -68,7 +69,7 @@ void Enemy::Render(Renderer &renderer) {
 
 void Enemy::Die() {
   isDead = true;
-  Physics::world->DestroyBody(body);
+  // Physics::world->DestroyBody(body); // Убираем немедленное удаление тела
 }
 
 bool Enemy::IsDead() { return isDead; }
