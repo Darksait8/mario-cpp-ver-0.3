@@ -5,6 +5,7 @@
 #include <Box2D/Common/Draw.hpp>
 #include <Box2D/Dynamics/Contacts/Contact.hpp>
 #include <SFML/Graphics.hpp>
+#include "Map.h"
 
 b2::World *Physics::world{};
 MyDebugDraw *Physics::debugDraw{};
@@ -108,12 +109,12 @@ private:
 	sf::RenderTarget& target;
 };
 
-void Physics::Init() {
+void Physics::Init(Map* mapInstance) {
   if (world)
     delete world;
 
   world = new b2::World(b2::Vec2(0.f, 9.8f)); // Укажите параметры, если нужно
-  world->SetContactListener(new MyContactListener()); // Устанавливаем наш слушатель контактов
+  world->SetContactListener(new MyContactListener(mapInstance)); // Устанавливаем наш слушатель контактов, передавая указатель на Map
 }
 
 void Physics::Update(float deltaTime, int velocityIterations, int positionIterations) {
@@ -140,11 +141,28 @@ void MyContactListener::BeginContact(b2::Contact* contact)
     FixtureData* dataA = static_cast<FixtureData*>(fixtureA->GetUserData());
     FixtureData* dataB = static_cast<FixtureData*>(fixtureB->GetUserData());
 
-    if (dataA && dataA->listener && dataA->type == FixtureDataType::Mario)
-        dataA->listener->OnBeginContact(fixtureA, fixtureB);
+    // Check for collision between Mario and a flag MapTile to start animation
+    if (dataA && dataB) {
+        bool isMarioA = (dataA->type == FixtureDataType::Mario);
+        bool isMarioB = (dataB->type == FixtureDataType::Mario);
 
-    if (dataB && dataB->listener && dataB->type == FixtureDataType::Mario)
+        bool isMapTileA = (dataA->type == FixtureDataType::MapTile);
+        bool isMapTileB = (dataB->type == FixtureDataType::MapTile);
+
+        if ((isMarioA && isMapTileB && dataB->isFlag) || (isMarioB && isMapTileA && dataA->isFlag)) {
+            if (mapInstance) {
+                mapInstance->StartFlagDescent();
+            }
+        }
+    }
+
+    // Always call the original listeners if they exist for either fixture
+    if (dataA && dataA->listener) {
+        dataA->listener->OnBeginContact(fixtureA, fixtureB);
+    }
+    if (dataB && dataB->listener) {
         dataB->listener->OnBeginContact(fixtureB, fixtureA);
+    }
 }
 
 void MyContactListener::EndContact(b2::Contact* contact)

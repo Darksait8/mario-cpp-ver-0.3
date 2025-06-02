@@ -12,32 +12,6 @@
 
 class Coin; // Forward declaration
 
-struct Data {
-  Map map{1.0f};
-  Camera camera{20.0f};
-  Mario mario{};
-  std::vector<Object *> objects{};
-  sf::Music music{};
-  bool paused{};
-
-  sf::Image mapImage{};
-  sf::Font font{};
-  sf::Text coinsText{"Coins", font};
-  sf::Text scoreText{"Score", font};
-  sf::Text livesText{"Lives", font};
-  sf::Text timeText{"Time", font};
-  sf::RectangleShape backgroundShape{sf::Vector2f(1.0f, 1.0f)};
-
-  sf::Sound deathSound; // Добавляем объект sf::Sound для звука смерти
-
-  int score = 0;
-  int lives = 4;
-  float timeElapsed = 0.0f;
-  bool isGameOver = false;
-};
-
-static Data *data;
-
 Camera &GetCamera() { return data->camera; }
 bool &GetPaused() { return data->paused; }
 
@@ -47,10 +21,11 @@ void Restart() {
     data->lives--; // Уменьшаем количество жизней
     data->score = 0; // Сбрасываем очки
     data->mario.coins = 0; // Сбрасываем количество монет у Марио (предполагая, что coins это член Mario)
-    Physics::Init();
+    Physics::Init(&data->map);
 
     data->mario.position =
         data->map.CreateFromImage(data->mapImage, data->objects, &data->mario);
+    data->mario.mapInstance = &data->map;
     data->mario.isDead = false;
     data->paused = false;
 
@@ -156,7 +131,7 @@ void Begin() {
 
 void Update(float deltaTime) {
   // Если Марио мертв и игра еще не окончена, вызываем рестарт (или Game Over)
-  if (data->mario.isDead && !data->isGameOver) // Добавляем проверку !data->isGameOver
+  if (data->mario.isDead && !data->isGameOver)
     Restart();
 
   if (data->paused)
@@ -164,63 +139,157 @@ void Update(float deltaTime) {
 
   // Если игра окончена, пропускаем остальную логику обновления
   if (data->isGameOver) {
-      // Здесь можно добавить логику для Game Over экрана (например, проверка ввода для рестарта/выхода)
+      // Здесь можно добавить логику для Game Over экрана (например, проверка ввода для рестарта/выста)
       return;
   }
 
+  // Check if victory sequence has started
+  if (data->map.victorySequenceStarted) {
+      // If victory sequence just started, configure Mario
+      if (!data->mario.inVictorySequence) {
+          data->mario.inVictorySequence = true;
+          // Deactivate Mario's physics body to manually control position
+          if (data->mario.body) {
+              data->mario.body->SetActive(false);
+          }
+          // Set initial vertical position for sliding down the flagpole
+          // Assuming Mario's position is already set near the top of the flagpole when touching the flag
+          // data->mario.position.y = ... ; // Maybe adjust if needed
+          data->mario.facingLeft = false; // Ensure facing right
+          // TODO: Start Mario's sliding down animation
+           data->mario.textureToDraw = Resources::textures["idle.png"]; // Placeholder texture
+      }
+
+      // --- Victory Sequence Logic ---
+
+      // Define the Y coordinate where Mario is considered on the ground after sliding down the pole
+      // This value should be based on your level design and tile size
+      // For example, if flagpole base is at y=Y and Mario's height is H, ground Y is Y - H/2
+      // Let's use the Y position of the bottom-most flagpole tile for simplicity for now,
+      // assuming Mario's origin is centered.
+      float groundY = -1.0f; // Initialize with an invalid value
+       if (data->mario.mapInstance && data->map.topFlagData) {
+           int flagColumn = data->map.topFlagData->mapX;
+           int flagRow = data->map.topFlagData->mapY;
+           int lowestFlagpoleRow = flagRow;
+            // Find the lowest flagpole tile in the flag's column
+           for (int y = flagRow + 1; y < data->mario.mapInstance->grid[flagColumn].size(); ++y) {
+               if (data->mario.mapInstance->grid[flagColumn][y] == &Resources::textures["flaghtock.png"]) {
+                   lowestFlagpoleRow = y;
+               } else {
+                   break; // Stop if we encounter a non-flagpole tile
+               }
+           }
+           // Calculate ground Y based on the lowest flagpole tile
+           groundY = lowestFlagpoleRow * data->mario.mapInstance->cellSize + data->mario.mapInstance->cellSize / 2.0f;
+       }
+
+
+      // If Mario is above the ground Y, slide him down
+      if (groundY > 0 && data->mario.position.y < groundY) {
+          float slideSpeed = 5.0f; // Adjust slide speed as needed
+          data->mario.position.y += slideSpeed * deltaTime;
+          // Cap position at groundY
+          if (data->mario.position.y > groundY) {
+              data->mario.position.y = groundY;
+          }
+           // TODO: Update sliding animation
+             data->mario.textureToDraw = Resources::textures["idle.png"]; // Placeholder texture
+
+      } else {
+          // Mario has reached the ground, start walking right
+           float victoryWalkSpeed = 3.0f; // Adjust speed as needed
+           data->mario.position.x += victoryWalkSpeed * deltaTime;
+           // TODO: Update walking animation
+           data->mario.runAnimation.Update(deltaTime);
+           data->mario.textureToDraw = data->mario.runAnimation.GetTexture();
+
+          // Check for end of walk (e.g., reach a certain x-coordinate near the end of the map)
+          // Define the X coordinate where Mario walks off screen
+          float endOfWalkX = (data->mario.mapInstance ? data->mario.mapInstance->grid.size() * data->mario.mapInstance->cellSize + 1.0f : data->mario.position.x + 100.0f); // Example: 1 unit past the end of the map grid
+
+          if (data->mario.position.x >= endOfWalkX) {
+              data->mario.victoryWalkComplete = true;
+              // Stop Mario's movement (optional, as he is now off-screen or game is ending)
+              // Maybe hide Mario?
+              // Transition to victory screen
+              data->isVictory = true;
+              // Optionally stop music or play victory sound
+              data->music.stop();
+          }
+      }
+
+      // Keep camera centered on Mario during the sequence
+       data->camera.position = data->mario.position;
+
+      // Update the map (for animations, etc.) - Map update should happen regardless for flag animation
+      data->map.Update(deltaTime); // Keep map update outside the condition to ensure flag animation runs
+
+      // Skip normal update logic
+      return;
+  }
+
+  // If the victory sequence is not started, perform normal game updates
   // Увеличиваем время
   data->timeElapsed += deltaTime;
 
   Physics::Update(deltaTime, 16, 6);
 
-  data->mario.Update(deltaTime);
+  data->mario.Update(deltaTime); // Normal Mario update (input, etc.)
+
+  // Update the map (for animations, etc.)
+  data->map.Update(deltaTime);
+
+  // Camera update should happen in both cases to follow Mario
   data->camera.position = data->mario.position;
 
-  // Проверяем, нужно ли разрушить блок
-  if (data->mario.shouldBreakBlock) {
-    // Вызываем метод разрушения блока у карты (меняем текстуру)
-    data->map.BreakBlock(data->mario.blockToBreakX, data->mario.blockToBreakY, &Resources::textures["nomoney.png"]);
-    
-    // Изменяем тип физического тела блока на статический, чтобы он остался на месте, но не реагировал на физику
-    if (data->mario.bodyToBreak) {
-        data->mario.bodyToBreak->SetType(b2::BodyType::staticBody);
+  // Проверяем, нужно ли разрушить блок - this should only happen during normal gameplay
+  if (!data->map.victorySequenceStarted) {
+    if (data->mario.shouldBreakBlock) {
+      // Вызываем метод разрушения блока у карты (меняем текстуру)
+      data->map.BreakBlock(data->mario.blockToBreakX, data->mario.blockToBreakY, &Resources::textures["nomoney.png"]);
+      
+      // Изменяем тип физического тела блока на статический, чтобы он остался на месте, но не реагировал на физику
+      if (data->mario.bodyToBreak) {
+          data->mario.bodyToBreak->SetType(b2::BodyType::staticBody);
 
-        // Находим фикстуру блока и помечаем ее как неразрушаемую
-        b2::Fixture* blockFixture = data->mario.bodyToBreak->GetFixtureList(); // Предполагаем, что у блока одна фикстура
-        if (blockFixture) {
-            FixtureData* fixtureData = static_cast<FixtureData*>(blockFixture->GetUserData());
-            if (fixtureData) {
-                fixtureData->isBreakable = false; // Блок больше не разрушаемый
-            }
-        }
+          // Находим фикстуру блока и помечаем ее как неразрушаемую
+          b2::Fixture* blockFixture = data->mario.bodyToBreak->GetFixtureList(); // Предполагаем, что у блока одна фикстура
+          if (blockFixture) {
+              FixtureData* fixtureData = static_cast<FixtureData*>(blockFixture->GetUserData());
+              if (fixtureData) {
+                  fixtureData->isBreakable = false; // Блок больше не разрушаемый
+              }
+          }
+      }
+
+      // Создаем новую монетку в позиции разрушенного блока
+      Coin* newCoin = new Coin(&data->mario); // Pass Mario pointer
+      newCoin->position = sf::Vector2f(
+          data->mario.blockToBreakX * data->map.cellSize + data->map.cellSize / 2.0f,
+          data->mario.blockToBreakY * data->map.cellSize + data->map.cellSize / 2.0f);
+      newCoin->initialPosition = newCoin->position; // Сохраняем начальную позицию
+      data->objects.push_back(newCoin);
+      newCoin->Begin(); // Инициализируем монетку (создает физическое тело и запускает анимацию)
+
+      // Даем монетке начальную скорость вверх и уменьшаем гравитацию
+      if (newCoin->body) { // Убеждаемся, что физическое тело создано
+          newCoin->body->SetLinearVelocity(b2::Vec2(0.0f, -7.0f)); // Уменьшаем скорость вверх
+          newCoin->body->SetGravityScale(0.5f); // Оставляем уменьшенную гравитацию для плавности
+      }
+
+      // Сбрасываем флаг и поля у Марио
+      data->mario.shouldBreakBlock = false;
+      data->mario.blockToBreakX = -1;
+      data->mario.blockToBreakY = -1;
+      data->mario.bodyToBreak = nullptr;
     }
-
-    // Создаем новую монетку в позиции разрушенного блока
-    Coin* newCoin = new Coin(&data->mario); // Pass Mario pointer
-    newCoin->position = sf::Vector2f(
-        data->mario.blockToBreakX * data->map.cellSize + data->map.cellSize / 2.0f,
-        data->mario.blockToBreakY * data->map.cellSize + data->map.cellSize / 2.0f);
-    newCoin->initialPosition = newCoin->position; // Сохраняем начальную позицию
-    data->objects.push_back(newCoin);
-    newCoin->Begin(); // Инициализируем монетку (создает физическое тело и запускает анимацию)
-
-    // Даем монетке начальную скорость вверх и уменьшаем гравитацию
-    if (newCoin->body) { // Убеждаемся, что физическое тело создано
-        newCoin->body->SetLinearVelocity(b2::Vec2(0.0f, -7.0f)); // Уменьшаем скорость вверх
-        newCoin->body->SetGravityScale(0.5f); // Оставляем уменьшенную гравитацию для плавности
-    }
-
-    // Сбрасываем флаг и поля у Марио
-    data->mario.shouldBreakBlock = false;
-    data->mario.blockToBreakX = -1;
-    data->mario.blockToBreakY = -1;
-    data->mario.bodyToBreak = nullptr;
   }
 
-  // Удаляем объекты, помеченные как isDead, после шага физики
+  // Удаляем объекты, помеченные как isDead, после шага физики - this should only happen during normal gameplay
   data->objects.erase(
       std::remove_if(data->objects.begin(), data->objects.end(),
-                     [](Object *obj) { 
+                     [](Object *obj) {
                        // Удаляем врагов, помеченных как isDead
                        if (obj->tag == "enemy") {
                          return dynamic_cast<Enemy*>(obj)->IsDead();
@@ -287,6 +356,52 @@ void RenderUI(Renderer &renderer) {
   // Не отображаем UI, если игра окончена
   if (data->isGameOver) {
       return;
+  }
+
+  // Отображаем экран победы, если игра выиграна
+  if (data->isVictory) {
+      renderer.target.clear(sf::Color::Black); // Очищаем экран (или оставьте последний кадр игры)
+
+      // !!! Сохраняем текущий вид и устанавливаем вид по умолчанию для отрисовки UI !!!
+      sf::View originalView = renderer.target.getView();
+      renderer.target.setView(renderer.target.getDefaultView());
+
+      // Получаем размеры окна (render target)
+      sf::Vector2u windowSize = renderer.target.getSize();
+
+      // Выводим текстовое сообщение VICTORY!
+      sf::Text victoryText("VICTORY!", data->font, 36); // Размер шрифта
+      victoryText.setFillColor(sf::Color::White);
+      victoryText.setOrigin(victoryText.getLocalBounds().width / 2.0f, victoryText.getLocalBounds().height / 2.0f);
+      victoryText.setPosition(windowSize.x / 2.0f, windowSize.y / 2.0f - 50); // Position above stats
+      renderer.target.draw(victoryText);
+
+      // Display Score, Time, and Coins
+      sf::Text statsText("", data->font, 24);
+      statsText.setFillColor(sf::Color::White);
+
+      // Score
+      statsText.setString("SCORE: " + std::to_string(data->score));
+      statsText.setOrigin(statsText.getLocalBounds().width / 2.0f, statsText.getLocalBounds().height / 2.0f);
+      statsText.setPosition(windowSize.x / 2.0f, windowSize.y / 2.0f);
+      renderer.target.draw(statsText);
+
+      // Time
+      statsText.setString("TIME: " + std::to_string(static_cast<int>(data->timeElapsed)));
+      statsText.setOrigin(statsText.getLocalBounds().width / 2.0f, statsText.getLocalBounds().height / 2.0f);
+      statsText.setPosition(windowSize.x / 2.0f, windowSize.y / 2.0f + 30);
+      renderer.target.draw(statsText);
+
+      // Coins
+      statsText.setString("COINS: " + std::to_string(data->mario.GetCoins()));
+      statsText.setOrigin(statsText.getLocalBounds().width / 2.0f, statsText.getLocalBounds().height / 2.0f);
+      statsText.setPosition(windowSize.x / 2.0f, windowSize.y / 2.0f + 60);
+      renderer.target.draw(statsText);
+
+      // !!! Восстанавливаем оригинальный вид !!!
+      renderer.target.setView(originalView);
+
+      return; // Пропускаем обычную отрисовку UI
   }
 
   sf::Vector2f viewSize = data->camera.GetViewSize();

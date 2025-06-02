@@ -9,6 +9,8 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
+class Map; // Forward declaration
+
 class Mario : public ContactListener {
 public:
   void Begin();
@@ -42,19 +44,32 @@ public:
 
   bool isFlying = false; // Флаг полета
 
-private:
-  Animation runAnimation{};
-  sf::Texture textureToDraw{};
-  sf::Sound jumpSound;
-  sf::Sound deathSound;
-
-  FixtureData fixtureData{};
-  b2::Body *body{};
-  b2::Fixture *groundFixture{};
-
-  size_t isGrounded{};
   bool facingLeft{};
   bool isInvincible = false; // Флаг неуязвимости
   float invincibilityTimer = 0.0f; // Таймер неуязвимости
   const float invincibilityDuration = 3.0f; // Длительность неуязвимости в секундах
+
+  b2::Filter originalFilter; // To store the original collision filter
+  b2::Filter originalGroundSensorFilter; // To store the original ground sensor filter
+
+  bool inVictorySequence = false; // Flag to track if Mario is in the victory sequence
+
+  bool victoryWalkComplete = false; // Flag to signal completion of victory walk
+
+  Map* mapInstance = nullptr; // Pointer to the Map instance
+
+  // Перемещаем эти поля из private в public
+  Animation runAnimation{};
+  sf::Texture textureToDraw{};
+  b2::Body *body{};
+
+  // Перемещаем isGrounded в public
+  size_t isGrounded{};
+
+private:
+  sf::Sound jumpSound;
+  sf::Sound deathSound;
+
+  FixtureData fixtureData{};
+  b2::Fixture *groundFixture{};
 };

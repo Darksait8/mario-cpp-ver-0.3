@@ -6,6 +6,7 @@
 #include <Box2D/Dynamics/Fixture.hpp>
 #include <Box2D/Dynamics/World.hpp>
 #include <Box2D/Collision/Shapes/CircleShape.hpp>
+#include <Box2D/Collision/Shapes/PolygonShape.hpp>
 #include <memory>
 #include <cmath>
 #include <random> // Включаем заголовочный файл для случайных чисел
@@ -43,6 +44,7 @@ void Enemy::Begin() {
   // bodyDef.fixedRotation = true; // если есть аналог
   body = Physics::world->CreateBody(&bodyDef);
 
+  // Main body fixture (circle)
   b2::CircleShape circleShape;
   circleShape.m_radius = 0.5f;
 
@@ -50,6 +52,22 @@ void Enemy::Begin() {
   fixtureDef.shape = &circleShape;
   fixtureDef.userData = &fixtureData;
   body->CreateFixture(&fixtureDef);
+
+  // Top sensor fixture for Mario stomping
+  b2::PolygonShape topSensorShape;
+  // Define the shape as a small rectangle above the enemy's main body
+  // Adjust the size (SetAsBox parameters) and position (b2::Vec2) as needed
+  topSensorShape.SetAsBox(0.4f, 0.1f, b2::Vec2(0.0f, -0.5f), 0.0f); // Example: 0.4 width, 0.1 height, centered 0.5 units above the body center
+
+  b2::FixtureDef topSensorDef{};
+  topSensorDef.shape = &topSensorShape;
+  topSensorDef.isSensor = true; // Make it a sensor so it doesn't collide physically
+  FixtureData* topSensorFixtureData = new FixtureData(); // Create new FixtureData for the sensor
+  *topSensorFixtureData = fixtureData; // Copy existing data
+  topSensorFixtureData->type = FixtureDataType::EnemyTopSensor; // Set a new type to identify this sensor
+  topSensorDef.userData = topSensorFixtureData; // Assign the new FixtureData
+
+  body->CreateFixture(&topSensorDef);
 
   // Случайный выбор начального направления движения
   std::random_device rd;

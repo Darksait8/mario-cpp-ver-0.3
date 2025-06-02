@@ -49,6 +49,7 @@ void Mario::Begin() {
   fixtureDef.friction = 0.01f;
   fixtureDef.restitution = 0.1f;
   body->CreateFixture(&fixtureDef);
+  originalFilter = body->GetFixtureList()->GetFilterData(); // Store filter for the first fixture
 
   b2::PolygonShape polygonShape;
   polygonShape.SetAsBox(0.5f, 0.5f);
@@ -56,6 +57,7 @@ void Mario::Begin() {
   fixtureDef.friction = 0.01f;
   fixtureDef.restitution = 0.1f;
   body->CreateFixture(&fixtureDef);
+  originalFilter = body->GetFixtureList()->GetNext()->GetFilterData(); // Store filter for the second fixture (assuming two main fixtures)
 
   // Create a smaller ground sensor at the bottom of Mario's feet
   b2::PolygonShape groundSensorShape;
@@ -64,10 +66,60 @@ void Mario::Begin() {
   fixtureDef.shape = &groundSensorShape;
   fixtureDef.isSensor = true;
   groundFixture = body->CreateFixture(&fixtureDef);
+  originalGroundSensorFilter = groundFixture->GetFilterData(); // Store filter for the ground sensor fixture
 }
 
 void Mario::Update(float deltaTime) {
   static bool wasDying = false; // Статическая переменная для отслеживания предыдущего состояния isDying
+
+  // Check if victory sequence has started in Map and transition to victory walk
+  if (mapInstance && mapInstance->victorySequenceStarted && !inVictorySequence) {
+      inVictorySequence = true;
+      // Disable collisions for all of Mario's fixtures
+      b2::Filter filter;
+      filter.maskBits = CATEGORY_NOTHING; // Don't collide with anything
+      for (b2::Fixture* f = body->GetFixtureList(); f; f = f->GetNext()) {
+          f->SetFilterData(filter);
+      }
+      // Set horizontal velocity for victory walk
+      float victoryWalkSpeed = 3.0f; // Adjust speed as needed
+      body->SetLinearVelocity(b2::Vec2(victoryWalkSpeed, 0.0f));
+
+      // Disable gravity during victory walk
+      body->SetGravityScale(0.0f);
+
+      // Ensure facing right for victory walk animation
+      facingLeft = false;
+
+      // TODO: Start Mario's walking animation here
+
+      // No return here yet, let the victory sequence logic below handle the update for this frame
+  }
+
+  // Victory sequence logic (when already in sequence)
+  if (inVictorySequence) {
+      // Update visual position from physics body
+      position = sf::Vector2f(body->GetPosition().x, body->GetPosition().y);
+
+      // TODO: Manage Mario's walking animation here (set appropriate texture/animation frame)
+      // For now, keep using the runAnimation
+      runAnimation.Update(deltaTime);
+      textureToDraw = runAnimation.GetTexture();
+
+      // Check for end of walk (e.g., reach a certain x-coordinate near the end of the map)
+      // Need to get map width from mapInstance
+      float endOfWalkX = (mapInstance ? mapInstance->grid.size() * mapInstance->cellSize - 2.0f : position.x + 100.0f); // Example: 2 units before the end of the map grid, fallback if mapInstance is null
+      if (position.x >= endOfWalkX) {
+          victoryWalkComplete = true;
+          // Stop Mario's movement and deactivate physics body
+          body->SetLinearVelocity(b2::Vec2(0.0f, 0.0f));
+          body->SetActive(false); // Deactivate the body
+          // Maybe set texture to idle or a victory pose
+          textureToDraw = Resources::textures["idle.png"]; // Or a victory pose texture
+      }
+
+      return; // Skip normal update logic when in victory sequence
+  }
 
   // Логика неуязвимости
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && !isInvincible) {
@@ -98,7 +150,7 @@ void Mario::Update(float deltaTime) {
     // Логика анимации смерти
     deathAnimationTimer += deltaTime;
     // Ручное обновление позиции для анимации смерти
-    deathSpeedY += Physics::world->GetGravity().y * body->GetGravityScale() * deltaTime; // Имитация гравитации
+    deathSpeedY += Physics::world->GetGravity().y * body->GetGravityScale() * deltaTime; // Имитация гравиции
     position.y += deathSpeedY * deltaTime; // Обновляем только вертикальную позицию
     // Горизонтальная позиция остается неизменной
 
@@ -221,28 +273,38 @@ void Mario::OnBeginContact(b2::Fixture *self, b2::Fixture *other) {
              data->object->tag == "enemy") {
     std::cout << "Contact with object tag: " << data->object->tag << std::endl;
     Enemy *enemy = dynamic_cast<Enemy *>(data->object);
-    if (!enemy || enemy->IsDead())
+    if (!enemy || enemy->IsDead() || isInvincible) // Добавлена проверка на неуязвимость Марио
       return;
 
     // Проверка на неуязвимость перед получением урона
-    if (isInvincible) {
-      // Если Марио неуязвим, игнорируем контакт с врагом (для получения урона)
-      return;
-    }
+    // if (isInvincible) {
+    //   // Если Марио неуязвим, игнорируем контакт с врагом (для получения урона)
+    //   return;
+    // }
 
-    if (groundFixture == self) {
+    if (groundFixture == self) { // Проверка, что контакт произошел с нижним сенсором Марио
       std::cout << "Mario stomped on enemy!" << std::endl;
       enemy->Die();
       // Добавляем импульс вверх к телу Марио для отскока
       float bounceVelocity = -8.0f; // Скорость отскока вверх (отрицательное значение для движения вверх)
       body->SetLinearVelocity(b2::Vec2(body->GetLinearVelocity().x, bounceVelocity));
-    } else if (!enemy->IsDead()) {
+    } else { // Контакт с любой другой частью тела врага (не верхним сенсором)
       std::cout << "Mario touched enemy and should die!" << std::endl;
       isDying = true;
       textureToDraw = Resources::textures["marioDeath.png"];
       body->SetGravityScale(0.5f);
       deathSpeedY = -5.0f;
     }
+  } else if (data->type == FixtureDataType::EnemyTopSensor) { // Проверка на контакт с верхним сенсором врага
+       std::cout << "Contact with enemy top sensor!" << std::endl;
+       Enemy* enemy = dynamic_cast<Enemy*>(data->object); // Приводим обратно к типу Enemy
+        if (enemy && !enemy->IsDead() && body->GetLinearVelocity().y > 0) { // Убеждаемся, что это враг, он жив, и Марио движется вниз
+           std::cout << "Mario stomped on enemy using top sensor!" << std::endl;
+           enemy->Die();
+           // Добавляем импульс вверх к телу Марио для отскока
+           float bounceVelocity = -8.0f; // Скорость отскока вверх
+           body->SetLinearVelocity(b2::Vec2(body->GetLinearVelocity().x, bounceVelocity));
+       }
   }
 }
 

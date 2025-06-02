@@ -9,6 +9,7 @@ constexpr float PI = 22.0f / 7.0f;
 class MyDebugDraw;
 class Object;
 class Mario;
+class Map; // Forward declaration for Map class
 
 class ContactListener {
 public:
@@ -16,12 +17,19 @@ public:
   virtual void OnEndContact(b2::Fixture *self, b2::Fixture *other) = 0;
 };
 
-enum class FixtureDataType { Mario, MapTile, Object };
+enum class FixtureDataType { Mario, MapTile, Object, EnemyTopSensor };
 
 struct FixtureData {
   FixtureDataType type;
   ContactListener *listener;
   bool isBreakable = false;
+
+  // Флаго-специфичные поля для анимации
+  bool isFlag = false;
+  bool isFlagTop = false;
+  bool isDescending = false; // Flag to indicate if the flag is descending
+  float flagDescentProgress = 0.0f; // Прогресс спуска (в пикселях)
+  float flagDescentSpeed = 100.0f; // Скорость спуска (пикселей в секунду)
 
   union {
     Mario *mario;
@@ -45,13 +53,18 @@ enum CollisionCategory {
 // Наш класс слушателя контактов для Box2D мира
 class MyContactListener : public b2::ContactListener {
 public:
+  // Constructor that takes a pointer to the Map instance
+  MyContactListener(Map* mapInstance) : mapInstance(mapInstance) {}
+
   void BeginContact(b2::Contact *contact) override;
   void EndContact(b2::Contact *contact) override;
+private:
+  Map* mapInstance; // Pointer to the Map instance
 };
 
 class Physics {
 public:
-  static void Init();
+  static void Init(Map* mapInstance);
   static void Update(float deltaTime, int velocityIterations, int positionIterations);
   static void DebugDraw(Renderer &renderer);
 
