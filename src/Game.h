@@ -14,3 +14,5 @@ void Render(Renderer &renderer);
 void RenderUI(Renderer &renderer);
 
 void DeleteObject(Object *object);
+
+void AddScore(int scoreToAdd);

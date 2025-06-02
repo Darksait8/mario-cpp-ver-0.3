@@ -1,10 +1,28 @@
 #include "Enemy.h"
 #include "Game.h"
 #include "Resources.h"
-#include <Box2D/Collision/Shapes/CircleShape.hpp>
+#include "Physics.h"
 #include <Box2D/Dynamics/Body.hpp>
 #include <Box2D/Dynamics/Fixture.hpp>
+#include <Box2D/Dynamics/World.hpp>
+#include <Box2D/Collision/Shapes/CircleShape.hpp>
 #include <memory>
+#include <cmath>
+#include <random> // Включаем заголовочный файл для случайных чисел
+
+// Custom query callback to find MapTile fixtures
+struct GroundCheckCallback : public b2::QueryCallback {
+    bool foundGround = false;
+
+    bool ReportFixture(b2::Fixture* fixture) override {
+        FixtureData* data = static_cast<FixtureData*>(fixture->GetUserData());
+        if (data && data->type == FixtureDataType::MapTile) {
+            foundGround = true;
+            return false; // Stop at the first MapTile found
+        }
+        return true; // Continue searching
+    }
+};
 
 void Enemy::Begin() {
   animation =
@@ -32,6 +50,14 @@ void Enemy::Begin() {
   fixtureDef.shape = &circleShape;
   fixtureDef.userData = &fixtureData;
   body->CreateFixture(&fixtureDef);
+
+  // Случайный выбор начального направления движения
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> dis(-1.0, 1.0);
+
+  // Устанавливаем movement в 5.0 или -5.0 случайным образом
+  movement = (dis(gen) > 0) ? 5.0f : -5.0f;
 }
 
 void Enemy::Update(float deltaTime) {
@@ -47,7 +73,28 @@ void Enemy::Update(float deltaTime) {
 
   auto velocity = body->GetLinearVelocity();
 
-  if (std::abs(velocity.x) <= 0.02f)
+  // Check for edge before moving
+  b2::Vec2 bodyPosition = body->GetPosition();
+  float checkDistance = 0.6f; // Check slightly ahead of the enemy
+  float checkHeight = 0.6f; // Увеличиваем checkHeight, чтобы AABB был ниже низа тела
+  
+  b2::Vec2 checkPoint(bodyPosition.x + std::copysign(checkDistance, movement), bodyPosition.y + checkHeight);
+
+  GroundCheckCallback callback;
+  b2::AABB aabb;
+  // Увеличиваем размер AABB
+  aabb.lowerBound = checkPoint - b2::Vec2(0.1f, 0.1f);
+  aabb.upperBound = checkPoint + b2::Vec2(0.1f, 0.1f);
+
+  Physics::world->QueryAABB(&callback, aabb);
+
+  // If no ground found ahead, reverse direction
+  if (!callback.foundGround) {
+      movement *= -1.0f;
+  }
+
+  // Reverse direction if hitting a wall (low horizontal velocity)
+  if (std::abs(velocity.x) <= 0.02f && !isDead)
     movement *= -1.0f;
 
   velocity.x = movement;
@@ -55,7 +102,7 @@ void Enemy::Update(float deltaTime) {
   body->SetLinearVelocity(velocity);
 
   auto xf = body->GetTransform();
-  position = sf::Vector2f(xf.p.x, xf.p.y);
+  this->position = sf::Vector2f(xf.p.x, xf.p.y);
 
   angle = static_cast<float>(body->GetAngle());
 }
@@ -69,6 +116,7 @@ void Enemy::Render(Renderer &renderer) {
 
 void Enemy::Die() {
   isDead = true;
+  AddScore(100); // Начисляем 100 очков за убийство врага
   // Physics::world->DestroyBody(body); // Убираем немедленное удаление тела
 }
 

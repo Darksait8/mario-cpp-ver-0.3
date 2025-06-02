@@ -5,7 +5,6 @@
 #include <Box2D/Common/Draw.hpp>
 #include <Box2D/Dynamics/Contacts/Contact.hpp>
 #include <SFML/Graphics.hpp>
-#include <iostream>
 
 b2::World *Physics::world{};
 MyDebugDraw *Physics::debugDraw{};
@@ -117,8 +116,8 @@ void Physics::Init() {
   world->SetContactListener(new MyContactListener()); // Устанавливаем наш слушатель контактов
 }
 
-void Physics::Update(float deltaTime) {
-  world->Step(deltaTime, 8, 3); // Используйте правильный метод вашей версии
+void Physics::Update(float deltaTime, int velocityIterations, int positionIterations) {
+  world->Step(deltaTime, velocityIterations, positionIterations);
   // Box2D
 }
 
@@ -135,15 +134,11 @@ void Physics::DebugDraw(Renderer &renderer) {
 // Реализация методов контактного слушателя
 void MyContactListener::BeginContact(b2::Contact* contact)
 {
-    std::cout << "BeginContact called!\n"; // Debug print
     b2::Fixture* fixtureA = contact->GetFixtureA();
     b2::Fixture* fixtureB = contact->GetFixtureB();
 
     FixtureData* dataA = static_cast<FixtureData*>(fixtureA->GetUserData());
     FixtureData* dataB = static_cast<FixtureData*>(fixtureB->GetUserData());
-
-    if (dataA) std::cout << "dataA type: " << static_cast<int>(dataA->type) << " listener: " << (dataA->listener != nullptr) << "\n"; // Debug print
-    if (dataB) std::cout << "dataB type: " << static_cast<int>(dataB->type) << " listener: " << (dataB->listener != nullptr) << "\n"; // Debug print
 
     if (dataA && dataA->listener && dataA->type == FixtureDataType::Mario)
         dataA->listener->OnBeginContact(fixtureA, fixtureB);

@@ -26,6 +26,9 @@ void Mario::Begin() {
   jumpSound.setBuffer(Resources::sounds["jump.wav"]);
   jumpSound.setVolume(20);
 
+  deathSound.setBuffer(Resources::sounds["mario-smert.mp3"]);
+  deathSound.setVolume(20);
+
   fixtureData.listener = this;
   fixtureData.mario = this;
   fixtureData.type = FixtureDataType::Mario;
@@ -43,16 +46,20 @@ void Mario::Begin() {
   fixtureDef.shape = &circleShape;
   fixtureDef.userData = &fixtureData;
   fixtureDef.density = 1.f;
+  fixtureDef.friction = 0.01f;
+  fixtureDef.restitution = 0.1f;
   body->CreateFixture(&fixtureDef);
 
   b2::PolygonShape polygonShape;
   polygonShape.SetAsBox(0.5f, 0.5f);
   fixtureDef.shape = &polygonShape;
+  fixtureDef.friction = 0.01f;
+  fixtureDef.restitution = 0.1f;
   body->CreateFixture(&fixtureDef);
 
   // Create a smaller ground sensor at the bottom of Mario's feet
   b2::PolygonShape groundSensorShape;
-  groundSensorShape.SetAsBox(0.2f, 0.05f, b2::Vec2(0.0f, 0.6f),
+  groundSensorShape.SetAsBox(0.4f, 0.05f, b2::Vec2(0.0f, 0.6f),
                              0.0f); // Уменьшаем размер и опускаем ниже
   fixtureDef.shape = &groundSensorShape;
   fixtureDef.isSensor = true;
@@ -60,6 +67,70 @@ void Mario::Begin() {
 }
 
 void Mario::Update(float deltaTime) {
+  static bool wasDying = false; // Статическая переменная для отслеживания предыдущего состояния isDying
+
+  // Логика неуязвимости
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && !isInvincible) {
+    isInvincible = true;
+    invincibilityTimer = 0.0f;
+    // Возможно, добавить визуальный эффект для неуязвимости здесь
+  }
+
+  if (isInvincible) {
+    invincibilityTimer += deltaTime;
+    if (invincibilityTimer >= invincibilityDuration) {
+      isInvincible = false;
+      invincibilityTimer = 0.0f;
+      // Возможно, убрать визуальный эффект неуязвимости здесь
+    }
+  }
+
+  if (isDying && !wasDying) {
+    // Только что начали анимацию смерти
+    body->SetActive(false); // Отключаем физическое тело
+    body->SetType(b2::BodyType::staticBody); // Устанавливаем тип на статический
+    body->SetLinearVelocity(b2::Vec2(0.0f, 0.0f)); // Обнуляем скорость
+    body->SetAngularVelocity(0.0f); // Обнуляем угловую скорость
+    deathSound.play();
+  }
+
+  if (isDying) {
+    // Логика анимации смерти
+    deathAnimationTimer += deltaTime;
+    // Ручное обновление позиции для анимации смерти
+    deathSpeedY += Physics::world->GetGravity().y * body->GetGravityScale() * deltaTime; // Имитация гравитации
+    position.y += deathSpeedY * deltaTime; // Обновляем только вертикальную позицию
+    // Горизонтальная позиция остается неизменной
+
+    // Завершаем анимацию смерти через 0.5 секунды
+    if (deathAnimationTimer >= 2.5f) {
+      isDead = true; // Устанавливаем флаг окончательной смерти
+      isDying = false; // Завершаем анимацию смерти
+      body->SetActive(true); // Включаем физическое тело обратно
+      body->SetType(b2::BodyType::dynamicBody); // Устанавливаем тип обратно на динамический
+      deathAnimationTimer = 0.0f; // Сбрасываем таймер
+    }
+  } else {
+    // Обычная логика обновления Марио (движение, прыжки и т.д.)
+
+    // Логика полета
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
+        if (!isFlying) {
+            isFlying = true;
+            body->SetGravityScale(0.0f); // Отключаем гравитацию во время полета
+        }
+        // Применяем постоянную вертикальную скорость вверх во время полета
+        auto velocity = body->GetLinearVelocity();
+        velocity.y = -movementSpeed; // Можно использовать другую скорость для полета
+        body->SetLinearVelocity(velocity);
+    } else {
+        if (isFlying) {
+            isFlying = false;
+            body->SetGravityScale(1.0f); // Восстанавливаем гравитацию
+        }
+    }
+
+    // Обычное горизонтальное движение
   float move = movementSpeed;
 
   runAnimation.Update(deltaTime);
@@ -74,7 +145,9 @@ void Mario::Update(float deltaTime) {
     velocity.x += move;
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
     velocity.x -= move;
-  if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ||
+
+  // Логика прыжка (только если не летим)
+  if (!isFlying && (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ||
        sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) &&
       isGrounded) {
     velocity.y = -jumpVelocity;
@@ -90,13 +163,26 @@ void Mario::Update(float deltaTime) {
   else
     textureToDraw = Resources::textures["idle.png"];
 
-  if (!isGrounded)
+  // Изменяем текстуру только если не летим
+  if (!isGrounded && !isFlying)
     textureToDraw = Resources::textures["jump.png"];
 
   body->SetLinearVelocity(velocity);
 
   position = sf::Vector2f(body->GetPosition().x, body->GetPosition().y);
   angle = static_cast<float>(body->GetAngle() * (180.0f / M_PI));
+  }
+
+  // Check if Mario falls off the bottom of the level
+  if (position.y > 32.0f && !isDying) {
+      std::cout << "Mario fell off the map!\n"; // Optional debug print
+      isDying = true;
+      textureToDraw = Resources::textures["marioDeath.png"];
+      body->SetGravityScale(0.5f);
+      deathSpeedY = -5.0f; // Give him a little upward bounce for death animation
+  }
+
+  wasDying = isDying; // Обновляем предыдущее состояние isDying
 }
 
 void Mario::Draw(Renderer &renderer) {
@@ -107,21 +193,28 @@ void Mario::Draw(Renderer &renderer) {
 void Mario::OnBeginContact(b2::Fixture *self, b2::Fixture *other) {
   FixtureData *data = static_cast<FixtureData *>(other->GetUserData());
 
-  std::cout << "Mario BeginContact! Self type: " << static_cast<int>(((FixtureData*)self->GetUserData())->type) << ", Other type: " << (data ? static_cast<int>(data->type) : -1) << ", Self fixture: " << (self == groundFixture ? "ground" : "other") << std::endl;
-
   if (!data)
     return;
 
   if (groundFixture == self && data->type == FixtureDataType::MapTile) {
     isGrounded++;
-    std::cout << "Ground contact! isGrounded = " << isGrounded << std::endl;
+  } else if (data->type == FixtureDataType::MapTile && data->isBreakable) {
+    b2::Vec2 marioPos = body->GetPosition();
+    b2::Vec2 blockPos = data->body->GetPosition();
+
+    if (marioPos.y > blockPos.y && body->GetLinearVelocity().y < 0) {
+      // Устанавливаем флаг и сохраняем физическое тело блока
+      shouldBreakBlock = true;
+      blockToBreakX = data->mapX;
+      blockToBreakY = data->mapY;
+      bodyToBreak = data->body; // Сохраняем тело блока
+    }
   } else if (data->type == FixtureDataType::Object &&
              data->object->tag == "coin") {
     std::cout << "Contact with object tag: " << data->object->tag << std::endl;
     Coin *coin = dynamic_cast<Coin *>(data->object);
     if (coin && !coin->isCollected) {
       coin->isCollected = true;
-      coins++;
       std::cout << "coins = " << coins << "\n";
     }
   } else if (data->type == FixtureDataType::Object &&
@@ -131,12 +224,24 @@ void Mario::OnBeginContact(b2::Fixture *self, b2::Fixture *other) {
     if (!enemy || enemy->IsDead())
       return;
 
+    // Проверка на неуязвимость перед получением урона
+    if (isInvincible) {
+      // Если Марио неуязвим, игнорируем контакт с врагом (для получения урона)
+      return;
+    }
+
     if (groundFixture == self) {
       std::cout << "Mario stomped on enemy!" << std::endl;
       enemy->Die();
+      // Добавляем импульс вверх к телу Марио для отскока
+      float bounceVelocity = -8.0f; // Скорость отскока вверх (отрицательное значение для движения вверх)
+      body->SetLinearVelocity(b2::Vec2(body->GetLinearVelocity().x, bounceVelocity));
     } else if (!enemy->IsDead()) {
       std::cout << "Mario touched enemy and should die!" << std::endl;
-      isDead = true;
+      isDying = true;
+      textureToDraw = Resources::textures["marioDeath.png"];
+      body->SetGravityScale(0.5f);
+      deathSpeedY = -5.0f;
     }
   }
 }
@@ -150,8 +255,6 @@ void Mario::OnEndContact(b2::Fixture *self, b2::Fixture *other) {
   if (groundFixture == self && data->type == FixtureDataType::MapTile &&
       isGrounded > 0) {
     isGrounded--;
-    std::cout << "Ground contact ended! isGrounded = " << isGrounded
-              << std::endl;
   }
 }
 

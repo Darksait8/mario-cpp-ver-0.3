@@ -22,12 +22,31 @@ public:
 
   sf::Vector2f position{};
   float angle{};
+
+  // Новые поля для сигнализации разрушения блока
+  bool shouldBreakBlock = false;
+  int blockToBreakX = -1;
+  int blockToBreakY = -1;
+
+  b2::Body* bodyToBreak = nullptr; // Новое поле для хранения тела блока для разрушения
+
+  // Делаем coins публичным, чтобы Game мог к нему обращаться
+  size_t coins = 1; // Инициализируем счетчик монет с 1
+
+  // Поля для анимации смерти
   bool isDead{};
+  bool isDying = false;
+  float deathAnimationTimer = 0.0f;
+  sf::Texture* deathTexture = nullptr;
+  float deathSpeedY = 0.0f; // Скорость по Y для анимации смерти
+
+  bool isFlying = false; // Флаг полета
 
 private:
   Animation runAnimation{};
   sf::Texture textureToDraw{};
   sf::Sound jumpSound;
+  sf::Sound deathSound;
 
   FixtureData fixtureData{};
   b2::Body *body{};
@@ -35,5 +54,7 @@ private:
 
   size_t isGrounded{};
   bool facingLeft{};
-  size_t coins{};
+  bool isInvincible = false; // Флаг неуязвимости
+  float invincibilityTimer = 0.0f; // Таймер неуязвимости
+  const float invincibilityDuration = 3.0f; // Длительность неуязвимости в секундах
 };

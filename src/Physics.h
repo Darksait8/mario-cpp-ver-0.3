@@ -21,6 +21,7 @@ enum class FixtureDataType { Mario, MapTile, Object };
 struct FixtureData {
   FixtureDataType type;
   ContactListener *listener;
+  bool isBreakable = false;
 
   union {
     Mario *mario;
@@ -51,7 +52,7 @@ public:
 class Physics {
 public:
   static void Init();
-  static void Update(float deltaTime);
+  static void Update(float deltaTime, int velocityIterations, int positionIterations);
   static void DebugDraw(Renderer &renderer);
 
   static b2::World *world;

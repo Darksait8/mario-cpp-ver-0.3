@@ -52,7 +52,39 @@ void Coin::Begin() {
   body->CreateFixture(&fixtureDef);
 }
 
-void Coin::Update(float deltaTime) { animation.Update(deltaTime); }
+void Coin::Update(float deltaTime) {
+  animation.Update(deltaTime);
+
+  // Логика для анимации вылета монетки вверх и возврата обратно
+  if (body) {
+    // Начальная позиция монетки (там, где был блок)
+    sf::Vector2f startPosition = initialPosition; // Используем сохраненную начальную позицию
+
+    // Проверяем, если монетка двигается вверх (скорость по Y отрицательная)
+    if (body->GetLinearVelocity().y < 0) {
+        // Пока двигаемся вверх, ничего особенного не делаем (скорость задана при создании)
+    } else { // Монетка начала падать (скорость по Y стала положительной или нулевой)
+        // Теперь нужно, чтобы она стремилась вернуться к начальной позиции Y
+        // Можно установить гравитацию обратно в нормальное значение или управлять скоростью напрямую
+        // Давайте просто установим ей скорость вниз, чтобы она вернулась
+        body->SetLinearVelocity(b2::Vec2(0.0f, 5.0f)); // Скорость вниз (положительная по Y)
+        body->SetGravityScale(0.0f); // Отключаем гравитацию, чтобы управлять движением вручную
+
+        // Проверяем, вернулась ли монетка примерно на начальную позицию по Y
+        if (body->GetPosition().y >= startPosition.y - 0.1f) { // Сравниваем с небольшим допуском
+            if (!isCollected) { // Only increment coins the first time
+                mario->coins++; // Increment Mario's coin count
+            }
+            isCollected = true; // Помечаем для удаления
+            // Опционально: остановить физическое тело, чтобы оно не падало дальше
+            body->SetLinearVelocity(b2::Vec2(0.0f, 0.0f));
+            body->SetType(b2::BodyType::staticBody);
+        }
+    }
+    // Обновляем позицию монетки на основе физического тела
+    position = sf::Vector2f(body->GetPosition().x, body->GetPosition().y);
+  }
+}
 
 void Coin::Render(Renderer &renderer) {
   renderer.Draw(animation.GetTexture(), position, sf::Vector2f(0.8f, 0.8f));
