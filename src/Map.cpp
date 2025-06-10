@@ -7,18 +7,23 @@
 #include <Box2D/Collision/Shapes/PolygonShape.hpp>
 #include <Box2D/Dynamics/Body.hpp>
 #include <Box2D/Dynamics/Fixture.hpp>
+#include <iostream>
 
 // Удаляем инициализацию статического поля grid
 // std::vector<std::vector<sf::Texture*>> Map::grid;
 
-Map::Map(float cellSize) : cellSize(cellSize) {}
-
-// Удаляем реализацию RemoveBlock
-// void Map::RemoveBlock(int x, int y) {
-//     if (x >= 0 && x < grid.size() && y >= 0 && y < grid[x].size()) {
-//         grid[x][y] = nullptr;
-//     }
-// }
+Map::Map(float cellSize) : cellSize(cellSize) {
+    if (Resources::textures.count("sky.png")) {
+        if (Resources::textures["sky.png"].getNativeHandle() != 0) { // Check if the texture is actually loaded
+            backgroundSprite.setTexture(Resources::textures["sky.png"]);
+            backgroundSprite.setScale(1.0f, 1.0f); // Убедитесь, что это правильный масштаб
+        } else {
+            std::cerr << "Error: sky.png texture is found in resources but is invalid (getNativeHandle() is 0) in Map constructor." << std::endl;
+        }
+    } else {
+        std::cerr << "Error: sky.png texture not found in resources for Map background in Map constructor." << std::endl;
+    }
+}
 
 void Map::CreateCheckerboard(size_t width, size_t height) {
   grid = std::vector(width, std::vector(height, (sf::Texture *)nullptr));
@@ -56,7 +61,12 @@ sf::Vector2f Map::CreateFromImage(const sf::Image &image,
                                      cellSize * y + cellSize / 2.0f);
         continue;
       } else if (color == sf::Color::Black) {
-        grid[x][y] = &Resources::textures["brick.png"];
+        if (Resources::textures.count("brick.png")) {
+            grid[x][y] = &Resources::textures["brick.png"];
+        } else {
+            grid[x][y] = nullptr; // Fallback if texture not loaded
+            std::cerr << "Warning: 'brick.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+        }
       } else if (color == sf::Color::Yellow) {
         object = new Coin(mario);
       } else if (color == sf::Color::Blue) {
@@ -65,37 +75,77 @@ sf::Vector2f Map::CreateFromImage(const sf::Image &image,
           std::abs(color.r - 255)<=5 &&
           std::abs(color.g - 175) <= 5 &&
           std::abs(color.b - 0) <= 5) {
-        grid[x][y] = &Resources::textures["kirpich.png"];
+        if (Resources::textures.count("kirpich.png")) {
+            grid[x][y] = &Resources::textures["kirpich.png"];
+        } else {
+            grid[x][y] = nullptr;
+            std::cerr << "Warning: 'kirpich.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+        }
       } else if (
           std::abs(color.r - 220) <= 5 &&
           std::abs(color.g - 220) <= 5 &&
           std::abs(color.b - 220) <= 5 &&
           color.a == 255) {
-        grid[x][y] = &Resources::textures["monetki.png"];
+        if (Resources::textures.count("monetki.png")) {
+            grid[x][y] = &Resources::textures["monetki.png"];
+        } else {
+            grid[x][y] = nullptr;
+            std::cerr << "Warning: 'monetki.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+        }
       } else if (
           std::abs(color.r - 0) <= 5 && std::abs(color.g - 255) <= 5 && std::abs(color.b - 0) <= 5 && color.a == 255) { // pile1.png color
-        grid[x][y] = &Resources::textures["pile1.png"];
+        if (Resources::textures.count("pile1.png")) {
+            grid[x][y] = &Resources::textures["pile1.png"];
+        } else {
+            grid[x][y] = nullptr;
+            std::cerr << "Warning: 'pile1.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+        }
       } else if (
           std::abs(color.r - 0) <= 5 && std::abs(color.g - 205) <= 5 && std::abs(color.b - 0) <= 5 && color.a == 255) { // pile1_2.png color
-        grid[x][y] = &Resources::textures["pile1_2.png"];
+        if (Resources::textures.count("pile1_2.png")) {
+            grid[x][y] = &Resources::textures["pile1_2.png"];
+        } else {
+            grid[x][y] = nullptr;
+            std::cerr << "Warning: 'pile1_2.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+        }
       } else if (
           std::abs(color.r - 0) <= 5 && std::abs(color.g - 145) <= 5 && std::abs(color.b - 0) <= 5 && color.a == 255) { // pile2.png color
-        grid[x][y] = &Resources::textures["pile2.png"];
+        if (Resources::textures.count("pile2.png")) {
+            grid[x][y] = &Resources::textures["pile2.png"];
+        } else {
+            grid[x][y] = nullptr;
+            std::cerr << "Warning: 'pile2.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+        }
       } else if (
           std::abs(color.r - 0) <= 5 && std::abs(color.g - 83) <= 5 && std::abs(color.b - 0) <= 5 && color.a == 255) { // pile2_2.png color
-        grid[x][y] = &Resources::textures["pile2_2.png"];
+        if (Resources::textures.count("pile2_2.png")) {
+            grid[x][y] = &Resources::textures["pile2_2.png"];
+        } else {
+            grid[x][y] = nullptr;
+            std::cerr << "Warning: 'pile2_2.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+        }
       } else if (
           std::abs(color.r - 255) <= 5 &&
           std::abs(color.g - 0) <= 5 &&
           std::abs(color.b - 255) <= 5 &&
           color.a == 255) {
-        grid[x][y] = &Resources::textures["flag.png"];
+        if (Resources::textures.count("flag.png")) {
+            grid[x][y] = &Resources::textures["flag.png"];
+        } else {
+            grid[x][y] = nullptr;
+            std::cerr << "Warning: 'flag.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+        }
       } else if (
           std::abs(color.r - 255) <= 5 &&
           std::abs(color.g - 0) <= 5 &&
           std::abs(color.b - 161) <= 5 &&
           color.a == 255) {
-        grid[x][y] = &Resources::textures["flaghtock.png"];
+        if (Resources::textures.count("flaghtock.png")) {
+            grid[x][y] = &Resources::textures["flaghtock.png"];
+        } else {
+            grid[x][y] = nullptr;
+            std::cerr << "Warning: 'flaghtock.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+        }
       }
 
 
@@ -147,19 +197,24 @@ sf::Vector2f Map::CreateFromImage(const sf::Image &image,
   for (size_t x = 0; x < grid.size(); x++) {
     for (size_t y = 0; y < grid[x].size(); y++) {
       // Check if the current block is a pipe block
-      bool isCurrentPipe = (grid[x][y] == &Resources::textures["pile1.png"] ||
-                            grid[x][y] == &Resources::textures["pile1_2.png"] ||
-                            grid[x][y] == &Resources::textures["pile2.png"] ||
-                            grid[x][y] == &Resources::textures["pile2_2.png"]);
+      // Make sure the texture exists before accessing it
+      bool isCurrentPipe = false;
+      if (grid[x][y]) { // Only check if the pointer is not null
+          isCurrentPipe = (grid[x][y] == &Resources::textures["pile1.png"] ||
+                               grid[x][y] == &Resources::textures["pile1_2.png"] ||
+                               grid[x][y] == &Resources::textures["pile2.png"] ||
+                               grid[x][y] == &Resources::textures["pile2_2.png"]);
+      }
 
       if (isCurrentPipe) {
         // Check if there is a pipe block directly above this one
         bool isPipeAbove = false;
         if (y > 0 && grid[x][y - 1] != nullptr) {
-          bool isAbovePipe = (grid[x][y-1] == &Resources::textures["pile1.png"] ||
-                               grid[x][y-1] == &Resources::textures["pile1_2.png"] ||
-                               grid[x][y-1] == &Resources::textures["pile2.png"] ||
-                               grid[x][y-1] == &Resources::textures["pile2_2.png"]);
+          bool isAbovePipe = false;
+          if (Resources::textures.count("pile1.png") && grid[x][y-1] == &Resources::textures["pile1.png"]) isAbovePipe = true;
+          if (Resources::textures.count("pile1_2.png") && grid[x][y-1] == &Resources::textures["pile1_2.png"]) isAbovePipe = true;
+          if (Resources::textures.count("pile2.png") && grid[x][y-1] == &Resources::textures["pile2.png"]) isAbovePipe = true;
+          if (Resources::textures.count("pile2_2.png") && grid[x][y-1] == &Resources::textures["pile2_2.png"]) isAbovePipe = true;
           if (isAbovePipe) {
             isPipeAbove = true;
           }
@@ -169,13 +224,33 @@ sf::Vector2f Map::CreateFromImage(const sf::Image &image,
         if (y == 0 || !isPipeAbove) {
             sf::Color color = image.getPixel(x, y); // Get original color for top texture selection
             if (std::abs(color.r - 0) <= 5 && std::abs(color.g - 145) <= 5 && std::abs(color.b - 0) <= 5 && color.a == 255) { // pile2.png color (top left)
-                 grid[x][y] = &Resources::textures["pile2.png"];
+                if (Resources::textures.count("pile2.png")) {
+                    grid[x][y] = &Resources::textures["pile2.png"];
+                } else {
+                    grid[x][y] = nullptr;
+                    std::cerr << "Warning: 'pile2.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+                }
             } else if (std::abs(color.r - 0) <= 5 && std::abs(color.g - 83) <= 5 && std::abs(color.b - 0) <= 5 && color.a == 255) { // pile2_2.png color (top right)
-                 grid[x][y] = &Resources::textures["pile2_2.png"];
+                if (Resources::textures.count("pile2_2.png")) {
+                    grid[x][y] = &Resources::textures["pile2_2.png"];
+                } else {
+                    grid[x][y] = nullptr;
+                    std::cerr << "Warning: 'pile2_2.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+                }
             } else if (std::abs(color.r - 0) <= 5 && std::abs(color.g - 255) <= 5 && std::abs(color.b - 0) <= 5 && color.a == 255) { // pile1.png color (bottom left, but at top)
-                  grid[x][y] = &Resources::textures["pile2.png"]; // Assume it should be top left
+                if (Resources::textures.count("pile2.png")) {
+                    grid[x][y] = &Resources::textures["pile2.png"]; // Assume it should be top left
+                } else {
+                    grid[x][y] = nullptr;
+                    std::cerr << "Warning: 'pile2.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+                }
             } else if (std::abs(color.r - 0) <= 5 && std::abs(color.g - 205) <= 5 && std::abs(color.b - 0) <= 5 && color.a == 255) { // pile1_2.png color (bottom right, but at top)
-                  grid[x][y] = &Resources::textures["pile2_2.png"]; // Assume it should be top right
+                if (Resources::textures.count("pile2_2.png")) {
+                    grid[x][y] = &Resources::textures["pile2_2.png"]; // Assume it should be top right
+                } else {
+                    grid[x][y] = nullptr;
+                    std::cerr << "Warning: 'pile2_2.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
+                }
             }
         }
       }
@@ -183,10 +258,33 @@ sf::Vector2f Map::CreateFromImage(const sf::Image &image,
   }
 
   return marioPosition;
+}
 
+void Map::ClearGrid() {
+    grid.clear();
+}
 
-}void Map::Draw(Renderer &renderer) {
+void Map::Draw(Renderer &renderer) {
   // Удаляем std::cout << "Map::Draw - Grid size..." << std::endl;
+
+  // Отрисовываем фоновый спрайт
+  if (Resources::textures.count("sky.png")) {
+      backgroundSprite.setTexture(Resources::textures["sky.png"]); // Убедитесь, что текстура установлена
+
+      // Получаем текущий вид
+      sf::View currentView = renderer.target.getView();
+
+      // Устанавливаем позицию спрайта в центр текущего вида
+      backgroundSprite.setPosition(currentView.getCenter().x - currentView.getSize().x / 2.0f,
+                                   currentView.getCenter().y - currentView.getSize().y / 2.0f);
+
+      // Устанавливаем масштаб спрайта, чтобы он покрывал весь вид
+      backgroundSprite.setScale(currentView.getSize().x / backgroundSprite.getLocalBounds().width,
+                               currentView.getSize().y / backgroundSprite.getLocalBounds().height);
+
+      renderer.target.draw(backgroundSprite);
+  }
+
   int x = 0;
   for (const auto &column : grid) {
     int y = 0;

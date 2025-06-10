@@ -7,6 +7,7 @@ public:
 
   void Draw(const sf::Texture &texture, const sf::Vector2f &position,
             const sf::Vector2f &size, float angle = 0.0f);
+  void Draw(const sf::Text &text);
 
   sf::RenderTarget &target;
 

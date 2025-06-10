@@ -13,3 +13,7 @@ void Renderer::Draw(const sf::Texture &texture, const sf::Vector2f &position,
       sf::Vector2f(size.x / texture.getSize().x, size.y / texture.getSize().y));
   target.draw(sprite);
 }
+
+void Renderer::Draw(const sf::Text &text) {
+    target.draw(text);
+}

@@ -9,7 +9,7 @@ int main() {
   window.setFramerateLimit(60);
 
   bool quit = false;
-  Begin();
+  Begin(window);
   while (!quit) {
     float deltaTime = deltaClock.restart().asSeconds();
 
@@ -17,9 +17,7 @@ int main() {
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed)
         quit = true;
-      if (event.type == sf::Event::KeyPressed &&
-          event.key.code == sf::Keyboard::Escape)
-        GetPaused() = !GetPaused();
+      HandleEvent(event);
     }
 
     Update(deltaTime);
@@ -27,7 +25,7 @@ int main() {
     window.clear();
 
     window.setView(GetCamera().GetView(window.getSize()));
-    Render(renderer);
+    Render(renderer, window);
 
     window.setView(GetCamera().GetUIView());
     RenderUI(renderer);

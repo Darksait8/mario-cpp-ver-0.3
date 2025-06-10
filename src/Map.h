@@ -25,6 +25,9 @@ public:
 	// Method to start the flag descent animation
 	void StartFlagDescent();
 
+	// Method to clear the map grid
+	void ClearGrid();
+
 	bool victorySequenceStarted = false; // Flag to indicate if the victory sequence has started
 
 	// Удаляем объявление RemoveBlock, если оно было добавлено как статическое
@@ -37,7 +40,9 @@ public:
 	// Перемещаем topFlagData в public
 	FixtureData* topFlagData = nullptr; // Pointer to the FixtureData of the top flag block
 
-private:
+	sf::Sprite backgroundSprite; // Добавляем фоновый спрайт
 
+private:
+	sf::Sprite backgroundSprite; // Добавляем фоновый спрайт
 
 };
