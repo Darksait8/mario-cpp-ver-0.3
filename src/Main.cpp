@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Renderer.h"
+#include "Resources.h"
 #include <SFML/Graphics.hpp>
 
 int main() {
@@ -7,6 +8,9 @@ int main() {
   sf::Clock deltaClock;
   Renderer renderer(window);
   window.setFramerateLimit(60);
+
+  // Инициализируем ресурсы после создания окна
+  Resources::initialize();
 
   bool quit = false;
   Begin(window);
@@ -34,4 +38,5 @@ int main() {
   }
 
   End();
+  return 0;
 }

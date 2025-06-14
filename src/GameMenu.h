@@ -71,9 +71,6 @@ public:
 
     void saveUsers();
 
-    std::string GetLocalizedMenuText(const std::string& key);
-    void updateLocalizedMenuStrings();
-
 private:
     std::vector<GameMenuItem> items;
     GameMenuState currentState;
@@ -85,7 +82,7 @@ private:
     sf::Text titleText;
     sf::Text instructionsText;
 
-    LeaderboardDisplayType currentLeaderboardDisplay; // Added member to track display type
+    LeaderboardDisplayType currentLeaderboardDisplay;
 
     // Переменные для полей ввода авторизации
     sf::Text usernameLabel;
@@ -149,7 +146,4 @@ private:
     void initializePauseMenuActions(); // Объявление новой функции для настройки меню паузы
     void initializeOptionsActions(); // Объявление функции для настройки меню опций
     void setupMenuForState(GameMenuState state); // Новая функция для настройки пунктов меню в зависимости от состояния
-
-    std::map<std::string, std::string> menuEnglishStrings;
-    std::map<std::string, std::string> menuRussianStrings;
 }; 

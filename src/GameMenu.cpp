@@ -34,44 +34,37 @@ GameMenu::GameMenu() : currentState(GameMenuState::AUTH), selectedIndex(0), game
     }
 
     // Загрузка фонового изображения
-    if (Resources::textures.count("mainmenu.png")) {
-        backgroundSprite.setTexture(Resources::textures["mainmenu.png"]);
-        // Масштабирование и позиционирование теперь будет происходить в render()
-    } else {
-        std::cerr << "Error: mainmenu.png texture not loaded for GameMenu background." << std::endl;
-    }
+    backgroundSprite.setTexture(Resources::getTexture("mainmenu.png"));
 
     // Инициализация текста заголовка
     titleText.setFont(font);
-    // titleText.setString("REMAKE SUPER MARIO BROSU."); // Удаляем текст заголовка
-    titleText.setCharacterSize(64); // Увеличиваем размер заголовка
+    titleText.setString("REMAKE SUPER MARIO BROS.");
+    titleText.setCharacterSize(64);
     titleText.setFillColor(sf::Color::Red);
     titleText.setOutlineColor(sf::Color::Yellow);
     titleText.setOutlineThickness(2.0f);
-    // Позиционирование будет происходить в renderMainMenu
 
     // Инициализация текста инструкций
     instructionsText.setFont(font);
-    // instructionsText.setString("W/S - Select, Enter - Confirm, ESC - Back"); // Moved to updateLocalizedMenuStrings
-    instructionsText.setCharacterSize(32); // Увеличиваем размер инструкций
+    instructionsText.setString("W/S - Select, Enter - Confirm, ESC - Back");
+    instructionsText.setCharacterSize(32);
     instructionsText.setFillColor(sf::Color::White);
     instructionsText.setOutlineColor(sf::Color::Black);
     instructionsText.setOutlineThickness(1.0f);
-    // Позиционирование будет происходить в renderMainMenu
 
     // Инициализация элементов авторизации
     usernameLabel.setFont(font);
-    // usernameLabel.setString("Username:"); // Moved to updateLocalizedMenuStrings
+    usernameLabel.setString("Username:");
     usernameLabel.setCharacterSize(32);
     usernameLabel.setFillColor(sf::Color::White);
 
     passwordLabel.setFont(font);
-    // passwordLabel.setString("Password:"); // Moved to updateLocalizedMenuStrings
+    passwordLabel.setString("Password:");
     passwordLabel.setCharacterSize(32);
     passwordLabel.setFillColor(sf::Color::White);
 
     usernameInputBox.setSize(sf::Vector2f(400, 50));
-    usernameInputBox.setFillColor(sf::Color(50, 50, 50, 200)); // Темно-серый, полупрозрачный
+    usernameInputBox.setFillColor(sf::Color(50, 50, 50, 200));
     usernameInputBox.setOutlineThickness(2);
     usernameInputBox.setOutlineColor(sf::Color::White);
 
@@ -86,7 +79,7 @@ GameMenu::GameMenu() : currentState(GameMenuState::AUTH), selectedIndex(0), game
     loginButtonRect.setOutlineColor(sf::Color::White);
 
     loginButtonText.setFont(font);
-    // loginButtonText.setString("Login"); // Moved to updateLocalizedMenuStrings
+    loginButtonText.setString("Login");
     loginButtonText.setCharacterSize(36);
     loginButtonText.setFillColor(sf::Color::White);
 
@@ -96,7 +89,7 @@ GameMenu::GameMenu() : currentState(GameMenuState::AUTH), selectedIndex(0), game
     registerButtonRect.setOutlineColor(sf::Color::White);
 
     registerButtonText.setFont(font);
-    // registerButtonText.setString("Register"); // Moved to updateLocalizedMenuStrings
+    registerButtonText.setString("Register");
     registerButtonText.setCharacterSize(36);
     registerButtonText.setFillColor(sf::Color::White);
 
@@ -107,146 +100,26 @@ GameMenu::GameMenu() : currentState(GameMenuState::AUTH), selectedIndex(0), game
     // Initialize messageText
     messageText.setFont(font);
     messageText.setCharacterSize(24);
-    messageText.setFillColor(sf::Color::Red); // Default to red for errors
-    messageText.setString(""); // Start with empty message
-
-    // Populate English menu strings
-    menuEnglishStrings["instructionsText"] = "W/S - Select, Enter - Confirm, ESC - Back";
-    menuEnglishStrings["usernameLabel"] = "Username:";
-    menuEnglishStrings["passwordLabel"] = "Password:";
-    menuEnglishStrings["loginButton"] = "Login";
-    menuEnglishStrings["registerButton"] = "Register";
-    menuEnglishStrings["loginSuccess"] = "Login successful!";
-    menuEnglishStrings["loginFailed"] = "Login failed. Invalid username or password.";
-    menuEnglishStrings["registrationSuccess"] = "Registration successful! You can now log in.";
-    menuEnglishStrings["registrationFailed"] = "Registration failed. Try a different username or shorter password.";
-    menuEnglishStrings["pauseTitle"] = "PAUSED";
-    menuEnglishStrings["continueGame"] = "Continue";
-    menuEnglishStrings["optionsMenu"] = "Options";
-    menuEnglishStrings["exitToMainMenu"] = "Exit to Main Menu";
-    menuEnglishStrings["victoryTitle"] = "VICTORY!";
-    menuEnglishStrings["scoreDisplay"] = "Score: ";
-    menuEnglishStrings["coinsDisplay"] = "Coins: ";
-    menuEnglishStrings["timeDisplay"] = "Time: ";
-    menuEnglishStrings["pressEnterToContinue"] = "Press ENTER to continue";
-    menuEnglishStrings["pressEscToExitMenu"] = "Press ESC to exit to main menu";
-    menuEnglishStrings["musicToggle"] = "Toggle Music";
-    menuEnglishStrings["changeVolume"] = "Change Volume (NYI)";
-    menuEnglishStrings["backButton"] = "Back";
-    menuEnglishStrings["leaderboardTitle"] = "Leaderboard";
-    menuEnglishStrings["toggleMusicOn"] = "Music: ON";
-    menuEnglishStrings["toggleMusicOff"] = "Music: OFF";
-    menuEnglishStrings["pressEscToReturn"] = "Press ESC to return";
-    menuEnglishStrings["leaderboardScore"] = "Score:";
-    menuEnglishStrings["leaderboardFastestTime"] = "Fastest Time:";
-    menuEnglishStrings["leaderboardMostCoins"] = "Most Coins:";
-
-    // Populate Russian menu strings
-    menuRussianStrings["instructionsText"] = "W/S - Выбрать, Enter - Подтвердить, ESC - Назад";
-    menuRussianStrings["usernameLabel"] = "Имя пользователя:";
-    menuRussianStrings["passwordLabel"] = "Пароль:";
-    menuRussianStrings["loginButton"] = "Вход";
-    menuRussianStrings["registerButton"] = "Регистрация";
-    menuRussianStrings["loginSuccess"] = "Вход успешен!";
-    menuRussianStrings["loginFailed"] = "Вход не удался. Неверное имя пользователя или пароль.";
-    menuRussianStrings["registrationSuccess"] = "Регистрация успешна! Теперь вы можете войти.";
-    menuRussianStrings["registrationFailed"] = "Регистрация не удалась. Попробуйте другое имя пользователя или более короткий пароль.";
-    menuRussianStrings["pauseTitle"] = "ПАУЗА";
-    menuRussianStrings["continueGame"] = "Продолжить";
-    menuRussianStrings["optionsMenu"] = "Настройки";
-    menuRussianStrings["exitToMainMenu"] = "Выход в главное меню";
-    menuRussianStrings["victoryTitle"] = "ПОБЕДА!";
-    menuRussianStrings["scoreDisplay"] = "Очки: ";
-    menuRussianStrings["coinsDisplay"] = "Монеты: ";
-    menuRussianStrings["timeDisplay"] = "Время: ";
-    menuRussianStrings["pressEnterToContinue"] = "Нажмите ENTER для продолжения";
-    menuRussianStrings["pressEscToExitMenu"] = "Нажмите ESC для выхода в главное меню";
-    menuRussianStrings["musicToggle"] = "Переключить музыку";
-    menuRussianStrings["changeVolume"] = "Изменить громкость (Н/Р)";
-    menuRussianStrings["backButton"] = "Назад";
-    menuRussianStrings["leaderboardTitle"] = "Таблица лидеров";
-    menuRussianStrings["toggleMusicOn"] = "Музыка: ВКЛ";
-    menuRussianStrings["toggleMusicOff"] = "Музыка: ВЫКЛ";
-    menuRussianStrings["pressEscToReturn"] = "Нажмите ESC для возврата";
-    menuRussianStrings["leaderboardScore"] = "Очки:";
-    menuRussianStrings["leaderboardFastestTime"] = "Лучшее время:";
-    menuRussianStrings["leaderboardMostCoins"] = "Больше всего монет:";
-
-    updateLocalizedMenuStrings(); // Initial update of menu strings
-}
-
-// Helper function to get localized menu text
-std::string GameMenu::GetLocalizedMenuText(const std::string& key) {
-    if (!gameDataRef) {
-        // Handle the case where gameDataRef is not set, e.g., during initial setup before Game is fully initialized.
-        // For debugging, you might print a warning:
-        // std::cerr << "Warning: gameDataRef is null in GetLocalizedMenuText for key: " << key << std::endl;
-        return "ERROR: gameDataRef NULL"; // Or a more appropriate fallback
-    }
-
-    if (gameDataRef->currentLanguage == Language::ENGLISH) {
-        if (menuEnglishStrings.count(key)) {
-            return menuEnglishStrings[key];
-        }
-    } else { // RUSSIAN
-        if (menuRussianStrings.count(key)) {
-            return menuRussianStrings[key];
-        }
-    }
-    return "MENU_KEY_NOT_FOUND"; // Fallback for missing keys
-}
-
-void GameMenu::updateLocalizedMenuStrings() {
-    // Update Main Menu items
-    // Re-initialize actions to update menu item strings
-    // This part should be handled by setupMenuForState which is called in setState
-    // For general text updates, we can update them directly here.
-    // Ensure gameDataRef is set before accessing currentLanguage
-    if (gameDataRef) {
-        // Update Auth menu texts
-        usernameLabel.setString(GetLocalizedMenuText("usernameLabel"));
-        passwordLabel.setString(GetLocalizedMenuText("passwordLabel"));
-        loginButtonText.setString(GetLocalizedMenuText("loginButton"));
-        registerButtonText.setString(GetLocalizedMenuText("registerButton"));
-        instructionsText.setString(GetLocalizedMenuText("instructionsText"));
-
-        // Update Options menu texts (labels only, actual menu items are handled by initializeOptionsActions)
-        // Ensure these SFML text objects are properly initialized in the constructor
-        volumeLabel.setString(GetLocalizedMenuText(gameDataRef->isMusicOn ? "toggleMusicOn" : "toggleMusicOff"));
-        brightnessLabel.setString(GetLocalizedMenuText("changeVolume")); // This is still brightness (NYI)
-
-        // Update Pause menu texts (items are handled by initializePauseMenuActions)
-
-        // Update Victory screen texts (handled directly in renderVictoryScreen for now)
-        // No need to update here, as they are dynamic in renderVictoryScreen
-    }
-
-    // Since menu items are dynamically created/updated via initializeActions,
-    // setupMenuForState and initializePauseMenuActions/initializeOptionsActions
-    // should be called after language change to refresh the menu item strings.
-    // This is already handled by calling updateLocalizedMenuStrings in setState.
+    messageText.setFillColor(sf::Color::Red);
+    messageText.setString("");
 }
 
 void GameMenu::initializeActions(Data* gameData) {
-    gameDataRef = gameData; // Set gameDataRef
-    // Добавляем пункты главного меню
-    items.clear(); // Clear existing items before adding main menu items
-    addMenuItem(GetLocalizedMenuText("startGame"), [this]() { // Use [this]() to access member functions
+    gameDataRef = gameData;
+    items.clear();
+    addMenuItem("Start Game", [this]() {
         if (gameDataRef) {
-            gameDataRef->isGameStarted = true;
-            gameDataRef->resetGame = true; // Signal to reset the game state
+            gameDataRef->isInMenu = false;
+            StartNewGame();
         }
     });
-    
-    addMenuItem(GetLocalizedMenuText("optionsMenu"), [this]() {
+    addMenuItem("Options", [this]() {
         setState(GameMenuState::OPTIONS);
     });
-    
-    addMenuItem(GetLocalizedMenuText("leaderboardTitle"), [this]() {
+    addMenuItem("Leaderboard", [this]() {
         setState(GameMenuState::CREDITS);
     });
-    
-    addMenuItem(GetLocalizedMenuText("exit"), []() {
+    addMenuItem("Exit", []() {
         exit(0);
     });
 }
@@ -265,9 +138,9 @@ void GameMenu::render(sf::RenderWindow& window) {
     // Отрисовка в зависимости от текущего состояния
     switch (currentState) {
         case GameMenuState::MAIN_MENU:
-            if (Resources::textures.count("mainmenu.png")) {
-                backgroundSprite.setTexture(Resources::textures["mainmenu.png"]);
-                sf::Vector2u textureSize = Resources::textures["mainmenu.png"].getSize();
+            if (Resources::getTexture("mainmenu.png").getNativeHandle() != 0) {
+                backgroundSprite.setTexture(Resources::getTexture("mainmenu.png"));
+                sf::Vector2u textureSize = Resources::getTexture("mainmenu.png").getSize();
                 sf::Vector2u windowSize = window.getSize();
                 backgroundSprite.setScale(
                     static_cast<float>(windowSize.x) / textureSize.x,
@@ -279,9 +152,9 @@ void GameMenu::render(sf::RenderWindow& window) {
             renderMainMenu(window);
             break;
         case GameMenuState::OPTIONS:
-            if (Resources::textures.count("options.png")) {
-                backgroundSprite.setTexture(Resources::textures["options.png"]);
-                sf::Vector2u textureSize = Resources::textures["options.png"].getSize();
+            if (Resources::getTexture("options.png").getNativeHandle() != 0) {
+                backgroundSprite.setTexture(Resources::getTexture("options.png"));
+                sf::Vector2u textureSize = Resources::getTexture("options.png").getSize();
                 sf::Vector2u windowSize = window.getSize();
                 backgroundSprite.setScale(
                     static_cast<float>(windowSize.x) / textureSize.x,
@@ -293,9 +166,9 @@ void GameMenu::render(sf::RenderWindow& window) {
             renderOptions(window);
             break;
         case GameMenuState::CREDITS:
-            if (Resources::textures.count("leaderboard.png")) {
-                backgroundSprite.setTexture(Resources::textures["leaderboard.png"]);
-                sf::Vector2u textureSize = Resources::textures["leaderboard.png"].getSize();
+            if (Resources::getTexture("leaderboard.png").getNativeHandle() != 0) {
+                backgroundSprite.setTexture(Resources::getTexture("leaderboard.png"));
+                sf::Vector2u textureSize = Resources::getTexture("leaderboard.png").getSize();
                 sf::Vector2u windowSize = window.getSize();
                 backgroundSprite.setScale(
                     static_cast<float>(windowSize.x) / textureSize.x,
@@ -307,9 +180,9 @@ void GameMenu::render(sf::RenderWindow& window) {
             renderCredits(window);
             break;
         case GameMenuState::AUTH:
-            if (Resources::textures.count("authorization.png")) {
-                backgroundSprite.setTexture(Resources::textures["authorization.png"]);
-                sf::Vector2u textureSize = Resources::textures["authorization.png"].getSize();
+            if (Resources::getTexture("authorization.png").getNativeHandle() != 0) {
+                backgroundSprite.setTexture(Resources::getTexture("authorization.png"));
+                sf::Vector2u textureSize = Resources::getTexture("authorization.png").getSize();
                 sf::Vector2u windowSize = window.getSize();
                 backgroundSprite.setScale(
                     static_cast<float>(windowSize.x) / textureSize.x,
@@ -321,11 +194,10 @@ void GameMenu::render(sf::RenderWindow& window) {
             renderAuth(window);
             break;
         case GameMenuState::PAUSE:
-            if (Resources::textures.count("pause.png")) {
-                backgroundSprite.setTexture(Resources::textures["pause.png"]);
-                // Добавлено отладочное сообщение
-                std::cout << "Drawing pause.png background. Texture size: " << Resources::textures["pause.png"].getSize().x << "x" << Resources::textures["pause.png"].getSize().y << std::endl;
-                sf::Vector2u textureSize = Resources::textures["pause.png"].getSize();
+            if (Resources::getTexture("pause.png").getNativeHandle() != 0) {
+                backgroundSprite.setTexture(Resources::getTexture("pause.png"));
+                std::cout << "Drawing pause.png background. Texture size: " << Resources::getTexture("pause.png").getSize().x << "x" << Resources::getTexture("pause.png").getSize().y << std::endl;
+                sf::Vector2u textureSize = Resources::getTexture("pause.png").getSize();
                 sf::Vector2u windowSize = window.getSize();
                 backgroundSprite.setScale(
                     static_cast<float>(windowSize.x) / textureSize.x,
@@ -339,9 +211,9 @@ void GameMenu::render(sf::RenderWindow& window) {
             renderPauseMenu(window);
             break;
         case GameMenuState::VICTORY:
-            if (Resources::textures.count("victory.png")) {
-                backgroundSprite.setTexture(Resources::textures["victory.png"]);
-                sf::Vector2u textureSize = Resources::textures["victory.png"].getSize();
+            if (Resources::getTexture("victory.png").getNativeHandle() != 0) {
+                backgroundSprite.setTexture(Resources::getTexture("victory.png"));
+                sf::Vector2u textureSize = Resources::getTexture("victory.png").getSize();
                 sf::Vector2u windowSize = window.getSize();
                 backgroundSprite.setScale(
                     static_cast<float>(windowSize.x) / textureSize.x,
@@ -405,11 +277,11 @@ void GameMenu::handleInput(sf::Event event) {
                     activeInputField = InputField::PASSWORD;
                 } else if (loginButtonRect.getGlobalBounds().contains(mousePos)) {
                     if (loginUser(usernameInput, passwordInput)) {
-                        messageText.setString(GetLocalizedMenuText("loginSuccess"));
+                        messageText.setString("Login successful!");
                         messageText.setFillColor(sf::Color::Green);
                         setState(GameMenuState::MAIN_MENU);
                     } else {
-                        messageText.setString(GetLocalizedMenuText("loginFailed"));
+                        messageText.setString("Login failed. Invalid username or password.");
                         messageText.setFillColor(sf::Color::Red);
                     }
                     usernameInput = "";
@@ -417,11 +289,11 @@ void GameMenu::handleInput(sf::Event event) {
                     activeInputField = InputField::NONE;
                 } else if (registerButtonRect.getGlobalBounds().contains(mousePos)) {
                     if (registerUser(usernameInput, passwordInput)) {
-                        messageText.setString(GetLocalizedMenuText("registrationSuccess"));
+                        messageText.setString("Registration successful! You can now log in.");
                         messageText.setFillColor(sf::Color::Green);
                         setState(GameMenuState::MAIN_MENU);
                     } else {
-                        messageText.setString(GetLocalizedMenuText("registrationFailed"));
+                        messageText.setString("Registration failed. Try a different username or shorter password.");
                         messageText.setFillColor(sf::Color::Red);
                     }
                     usernameInput = "";
@@ -701,7 +573,6 @@ void GameMenu::setState(GameMenuState newState) {
     previousState = currentState; // Сохраняем текущее состояние как предыдущее
     currentState = newState;
     setupMenuForState(newState); // Call setupMenuForState after changing state
-    updateLocalizedMenuStrings(); // Update menu strings after state change
     // selectedIndex = 0; // This is now handled by setupMenuForState
 }
 
@@ -720,11 +591,6 @@ void GameMenu::renderMainMenu(sf::RenderWindow& window) {
     );
     backgroundSprite.setPosition(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2); // Позиционируем фон на весь экран
     window.draw(backgroundSprite);
-
-    // Позиционируем заголовок
-    titleText.setOrigin(titleText.getLocalBounds().width / 2.0f, titleText.getLocalBounds().height / 2.0f);
-    titleText.setPosition(viewCenter.x, viewCenter.y - viewSize.y / 3.0f); // Изменяем смещение для заголовка
-    window.draw(titleText);
 
     float startY = viewCenter.y - 60; // Изменяем начальную позицию для пунктов меню, чтобы учесть отсутствие заголовка и большее расстояние
     float lineHeight = 60.0f; // Расстояние между пунктами
@@ -746,52 +612,58 @@ void GameMenu::renderMainMenu(sf::RenderWindow& window) {
 }
 
 void GameMenu::renderOptions(sf::RenderWindow& window) {
-    sf::Vector2f viewCenter = window.getView().getCenter(); // Declare viewCenter here
-    sf::Vector2f viewSize = window.getView().getSize(); // Also ensure viewSize is declared if used
+    sf::Vector2f viewCenter = window.getView().getCenter();
+    sf::Vector2f viewSize = window.getView().getSize();
 
-    // Отрисовка затемняющего фона для регулировки яркости
-    // Чем меньше brightness (от 0.0 до 1.0), тем темнее будет затемняющий слой
+    // Затемняющий фон для регулировки яркости
     sf::RectangleShape dimmer(sf::Vector2f(viewSize.x, viewSize.y));
     dimmer.setFillColor(sf::Color(0, 0, 0, static_cast<sf::Uint8>((1.0f - gameDataRef->brightness) * 255)));
     dimmer.setPosition(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2);
     window.draw(dimmer);
 
-    // Render options title
-    titleText.setString(GetLocalizedMenuText("optionsMenu"));
-    titleText.setOrigin(titleText.getLocalBounds().width / 2.0f, titleText.getLocalBounds().height / 2.0f);
-    titleText.setPosition(viewCenter.x, viewCenter.y - 300); // Higher position for the title
-    window.draw(titleText);
+    // --- Ползунок Яркость ---
+    sf::Text brightnessLabel(L"Яркость", font, 32);
+    brightnessLabel.setFillColor(activeSlider == OptionSliderType::BRIGHTNESS ? sf::Color::Yellow : sf::Color::White);
+    brightnessLabel.setOutlineColor(sf::Color::Black);
+    brightnessLabel.setOutlineThickness(2.0f);
+    brightnessLabel.setOrigin(brightnessLabel.getLocalBounds().width / 2.0f, brightnessLabel.getLocalBounds().height / 2.0f);
+    brightnessLabel.setPosition(viewCenter.x, viewCenter.y - 60);
 
-    float startY = viewCenter.y - 50;
-    float lineHeight = 60.0f;
+    sf::RectangleShape brightnessTrack(sf::Vector2f(300, 8));
+    brightnessTrack.setFillColor(sf::Color(100, 100, 100));
+    brightnessTrack.setOrigin(brightnessTrack.getSize().x / 2, brightnessTrack.getSize().y / 2);
+    brightnessTrack.setPosition(viewCenter.x, viewCenter.y - 20);
 
-    for (size_t i = 0; i < items.size(); ++i) {
-        items[i].text.setFillColor(sf::Color::White); // Сброс цвета для невыбранных
-        if (i == selectedIndex) {
-            items[i].text.setFillColor(sf::Color::Yellow); // Выделение выбранного пункта
-        }
-        items[i].text.setOrigin(items[i].text.getLocalBounds().width / 2.0f, items[i].text.getLocalBounds().height / 2.0f);
-        items[i].text.setPosition(viewCenter.x, startY + i * lineHeight);
-        window.draw(items[i].text);
-    }
+    sf::CircleShape brightnessThumb(12);
+    brightnessThumb.setFillColor(sf::Color::White);
+    float bx = viewCenter.x - 150 + 300 * gameDataRef->brightness;
+    brightnessThumb.setPosition(bx - 12, viewCenter.y - 32);
 
-    // Update and draw music toggle text
-    if (gameDataRef) {
-        volumeLabel.setString(GetLocalizedMenuText(gameDataRef->isMusicOn ? "toggleMusicOn" : "toggleMusicOff"));
-        volumeLabel.setOrigin(volumeLabel.getLocalBounds().width / 2.0f, volumeLabel.getLocalBounds().height / 2.0f);
-        volumeLabel.setPosition(viewCenter.x, startY + 0 * lineHeight);
-        // We don't draw it here directly, as it's part of the menu items handled above
-    }
+    // --- Ползунок Звук ---
+    sf::Text volumeLabel(L"Звук", font, 32);
+    volumeLabel.setFillColor(activeSlider == OptionSliderType::VOLUME ? sf::Color::Yellow : sf::Color::White);
+    volumeLabel.setOutlineColor(sf::Color::Black);
+    volumeLabel.setOutlineThickness(2.0f);
+    volumeLabel.setOrigin(volumeLabel.getLocalBounds().width / 2.0f, volumeLabel.getLocalBounds().height / 2.0f);
+    volumeLabel.setPosition(viewCenter.x, viewCenter.y + 40);
 
-    // Draw instructions text (ESC to return)
-    instructionsText.setString(GetLocalizedMenuText("pressEscToReturn"));
-    instructionsText.setOrigin(instructionsText.getLocalBounds().width / 2.0f, instructionsText.getLocalBounds().height / 2.0f);
-    instructionsText.setPosition(viewCenter.x, viewCenter.y + viewSize.y / 2.5f); // Position below the menu items
-    window.draw(instructionsText);
+    sf::RectangleShape volumeTrack(sf::Vector2f(300, 8));
+    volumeTrack.setFillColor(sf::Color(100, 100, 100));
+    volumeTrack.setOrigin(volumeTrack.getSize().x / 2, volumeTrack.getSize().y / 2);
+    volumeTrack.setPosition(viewCenter.x, viewCenter.y + 80);
 
-    // Render volume slider (if applicable)
-    // For now, only the toggle music option is active, sliders are not yet implemented visually.
+    sf::CircleShape volumeThumb(12);
+    volumeThumb.setFillColor(sf::Color::White);
+    float vx = viewCenter.x - 150 + 300 * (gameDataRef->volume / 100.0f);
+    volumeThumb.setPosition(vx - 12, viewCenter.y + 68);
 
+    // Рисуем всё
+    window.draw(brightnessLabel);
+    window.draw(brightnessTrack);
+    window.draw(brightnessThumb);
+    window.draw(volumeLabel);
+    window.draw(volumeTrack);
+    window.draw(volumeThumb);
 }
 
 void GameMenu::renderCredits(sf::RenderWindow& window) {
@@ -816,24 +688,34 @@ void GameMenu::renderCredits(sf::RenderWindow& window) {
         viewSize.x / backgroundSprite.getTexture()->getSize().x,
         viewSize.y / backgroundSprite.getTexture()->getSize().y
     );
-    backgroundSprite.setPosition(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2); // Позиционируем фон на весь экран
+    backgroundSprite.setPosition(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2);
     window.draw(backgroundSprite);
 
-    // Render leaderboard title
-    titleText.setString(GetLocalizedMenuText("leaderboardTitle"));
-    titleText.setOrigin(titleText.getLocalBounds().width / 2.0f, titleText.getLocalBounds().height / 2.0f);
-    titleText.setPosition(viewCenter.x, viewCenter.y - 300); // Higher position for the title
-    window.draw(titleText);
+    // Подписи категорий
+    sf::Text scoreLabel("Score", font, 28);
+    sf::Text timeLabel("Time", font, 28);
+    sf::Text coinsLabel("Coins", font, 28);
+    scoreLabel.setFillColor(currentLeaderboardDisplay == LeaderboardDisplayType::SCORE ? sf::Color::Yellow : sf::Color::White);
+    timeLabel.setFillColor(currentLeaderboardDisplay == LeaderboardDisplayType::FASTEST_TIME ? sf::Color::Yellow : sf::Color::White);
+    coinsLabel.setFillColor(currentLeaderboardDisplay == LeaderboardDisplayType::MOST_COINS ? sf::Color::Yellow : sf::Color::White);
+    scoreLabel.setOutlineColor(sf::Color::Black);
+    timeLabel.setOutlineColor(sf::Color::Black);
+    coinsLabel.setOutlineColor(sf::Color::Black);
+    scoreLabel.setOutlineThickness(2.0f);
+    timeLabel.setOutlineThickness(2.0f);
+    coinsLabel.setOutlineThickness(2.0f);
+    scoreLabel.setOrigin(scoreLabel.getLocalBounds().width / 2.0f, scoreLabel.getLocalBounds().height / 2.0f);
+    timeLabel.setOrigin(timeLabel.getLocalBounds().width / 2.0f, timeLabel.getLocalBounds().height / 2.0f);
+    coinsLabel.setOrigin(coinsLabel.getLocalBounds().width / 2.0f, coinsLabel.getLocalBounds().height / 2.0f);
+    scoreLabel.setPosition(scoreLeaderboardRect.getPosition().x + scoreLeaderboardRect.getSize().x / 2, scoreLeaderboardRect.getPosition().y + scoreLeaderboardRect.getSize().y / 2);
+    timeLabel.setPosition(timeLeaderboardRect.getPosition().x + timeLeaderboardRect.getSize().x / 2, timeLeaderboardRect.getPosition().y + timeLeaderboardRect.getSize().y / 2);
+    coinsLabel.setPosition(coinsLeaderboardRect.getPosition().x + coinsLeaderboardRect.getSize().x / 2, coinsLeaderboardRect.getPosition().y + coinsLeaderboardRect.getSize().y / 2);
 
-    // Render leaderboard data
-    float startY = viewCenter.y - 200;
-    float lineHeight = 40.0f;
-
-    // Display current user's score at the top if logged in
+    // Надпись о текущем пользователе
     if (!loggedInUsername.empty() && gameDataRef) {
         sf::Text currentUserScoreText;
         currentUserScoreText.setFont(font);
-        std::string currentUserDisplay = loggedInUsername + ": ";
+        std::string currentUserDisplay = "Current user: " + loggedInUsername + " — ";
         switch (currentLeaderboardDisplay) {
             case LeaderboardDisplayType::SCORE:
                 currentUserDisplay += std::to_string(gameDataRef->score);
@@ -851,30 +733,41 @@ void GameMenu::renderCredits(sf::RenderWindow& window) {
         currentUserScoreText.setOutlineColor(sf::Color::Black);
         currentUserScoreText.setOutlineThickness(1.0f);
         currentUserScoreText.setOrigin(currentUserScoreText.getLocalBounds().width / 2.0f, currentUserScoreText.getLocalBounds().height / 2.0f);
-        currentUserScoreText.setPosition(viewCenter.x, startY - 50); // Position above the list
+        currentUserScoreText.setPosition(viewCenter.x, viewCenter.y - 40);
         window.draw(currentUserScoreText);
     }
 
-    // Sort users based on selected display type
+    // Надпись "Топ игроков:"
+    sf::Text topLabel("Top players:", font, 26);
+    topLabel.setFillColor(sf::Color::White);
+    topLabel.setOutlineColor(sf::Color::Black);
+    topLabel.setOutlineThickness(1.0f);
+    topLabel.setOrigin(topLabel.getLocalBounds().width / 2.0f, topLabel.getLocalBounds().height / 2.0f);
+    topLabel.setPosition(viewCenter.x, viewCenter.y + 10);
+    window.draw(topLabel);
+
+    // Сортировка и вывод топа (без дублирования текущего пользователя)
     std::vector<User> sortedUsers = users;
     std::sort(sortedUsers.begin(), sortedUsers.end(), [this](const User& a, const User& b) {
         if (currentLeaderboardDisplay == LeaderboardDisplayType::SCORE) {
-            return a.score > b.score; // Higher score is better
+            return a.score > b.score;
         } else if (currentLeaderboardDisplay == LeaderboardDisplayType::FASTEST_TIME) {
-            // Lower time is better, but 0 means not set, so 0 is worst
             if (a.fastestTime == 0) return false;
             if (b.fastestTime == 0) return true;
             return a.fastestTime < b.fastestTime;
-        } else { // MOST_COINS
-            return a.mostCoins > b.mostCoins; // More coins is better
+        } else {
+            return a.mostCoins > b.mostCoins;
         }
     });
 
-    // Display top users
-    for (size_t i = 0; i < std::min((size_t)10, sortedUsers.size()); ++i) {
+    size_t shown = 0;
+    float userListStartY = viewCenter.y + 50;
+    float lineHeight = 40.0f;
+    for (size_t i = 0; i < sortedUsers.size() && shown < 10; ++i) {
+        if (!loggedInUsername.empty() && sortedUsers[i].username == loggedInUsername) continue; // не дублируем
         sf::Text userEntryText;
         userEntryText.setFont(font);
-        std::string entryString = std::to_string(i + 1) + ". " + sortedUsers[i].username + ": ";
+        std::string entryString = std::to_string(shown + 1) + ". " + sortedUsers[i].username + ": ";
         switch (currentLeaderboardDisplay) {
             case LeaderboardDisplayType::SCORE:
                 entryString += std::to_string(sortedUsers[i].score);
@@ -892,17 +785,21 @@ void GameMenu::renderCredits(sf::RenderWindow& window) {
         userEntryText.setOutlineColor(sf::Color::Black);
         userEntryText.setOutlineThickness(1.0f);
         userEntryText.setOrigin(userEntryText.getLocalBounds().width / 2.0f, userEntryText.getLocalBounds().height / 2.0f);
-        userEntryText.setPosition(viewCenter.x, startY + i * lineHeight);
+        userEntryText.setPosition(viewCenter.x, userListStartY + shown * lineHeight);
         window.draw(userEntryText);
+        ++shown;
     }
 
     // Render clickable rectangles for leaderboard categories
     scoreLeaderboardRect.setFillColor(currentLeaderboardDisplay == LeaderboardDisplayType::SCORE ? sf::Color(100, 100, 250, 150) : sf::Color(50, 50, 150, 150));
-    window.draw(scoreLeaderboardRect);
     timeLeaderboardRect.setFillColor(currentLeaderboardDisplay == LeaderboardDisplayType::FASTEST_TIME ? sf::Color(100, 100, 250, 150) : sf::Color(50, 50, 150, 150));
-    window.draw(timeLeaderboardRect);
     coinsLeaderboardRect.setFillColor(currentLeaderboardDisplay == LeaderboardDisplayType::MOST_COINS ? sf::Color(100, 100, 250, 150) : sf::Color(50, 50, 150, 150));
+    window.draw(scoreLeaderboardRect);
+    window.draw(timeLeaderboardRect);
     window.draw(coinsLeaderboardRect);
+    window.draw(scoreLabel);
+    window.draw(timeLabel);
+    window.draw(coinsLabel);
 }
 
 void GameMenu::renderAuth(sf::RenderWindow& window) {
@@ -918,10 +815,6 @@ void GameMenu::renderAuth(sf::RenderWindow& window) {
     window.draw(backgroundSprite);
 
     // Позиционирование заголовка
-    titleText.setString(GetLocalizedMenuText("welcomeTitle")); // Assuming a welcome title for auth
-    titleText.setOrigin(titleText.getLocalBounds().width / 2.0f, titleText.getLocalBounds().height / 2.0f);
-    titleText.setPosition(viewCenter.x, viewCenter.y - 300);
-    window.draw(titleText);
 
     // Позиционирование полей ввода
     float inputWidth = 400;
@@ -1008,7 +901,7 @@ void GameMenu::renderPauseMenu(sf::RenderWindow& window) {
 
     // Отрисовка затемняющего фона - это должен делать Game::Render()
     // Render options title
-    titleText.setString(GetLocalizedMenuText("pauseTitle"));
+    titleText.setString("Paused");
     titleText.setOrigin(titleText.getLocalBounds().width / 2.0f, titleText.getLocalBounds().height / 2.0f);
     titleText.setPosition(viewCenter.x, viewCenter.y - 150); // Higher position for the title
     window.draw(titleText);
@@ -1040,7 +933,7 @@ void GameMenu::renderVictoryScreen(sf::RenderWindow& window) {
     window.draw(backgroundSprite);
 
     // Render victory title
-    titleText.setString(GetLocalizedMenuText("victoryTitle"));
+    titleText.setString("Victory!");
     titleText.setOrigin(titleText.getLocalBounds().width / 2.0f, titleText.getLocalBounds().height / 2.0f);
     titleText.setPosition(viewCenter.x, viewCenter.y - 300); // Higher position for the title
     window.draw(titleText);
@@ -1049,7 +942,7 @@ void GameMenu::renderVictoryScreen(sf::RenderWindow& window) {
     scoreText.setFont(font);
     scoreText.setCharacterSize(40);
     scoreText.setFillColor(sf::Color::White);
-    scoreText.setString(GetLocalizedMenuText("scoreDisplay") + std::to_string(gameDataRef->score));
+    scoreText.setString("Score: " + std::to_string(gameDataRef->score));
     scoreText.setOrigin(scoreText.getLocalBounds().width / 2.0f, scoreText.getLocalBounds().height / 2.0f);
     scoreText.setPosition(viewCenter.x, viewCenter.y - 100); // Below title
     window.draw(scoreText);
@@ -1058,7 +951,7 @@ void GameMenu::renderVictoryScreen(sf::RenderWindow& window) {
     coinsText.setFont(font);
     coinsText.setCharacterSize(40);
     coinsText.setFillColor(sf::Color::White);
-    coinsText.setString(GetLocalizedMenuText("coinsDisplay") + std::to_string(gameDataRef->mario.coins));
+    coinsText.setString("Coins: " + std::to_string(gameDataRef->mario.coins));
     coinsText.setOrigin(coinsText.getLocalBounds().width / 2.0f, coinsText.getLocalBounds().height / 2.0f);
     coinsText.setPosition(viewCenter.x, viewCenter.y - 50); // Below score
     window.draw(coinsText);
@@ -1067,13 +960,13 @@ void GameMenu::renderVictoryScreen(sf::RenderWindow& window) {
     timeText.setFont(font);
     timeText.setCharacterSize(40);
     timeText.setFillColor(sf::Color::White);
-    timeText.setString(GetLocalizedMenuText("timeDisplay") + std::to_string(static_cast<int>(gameDataRef->timeElapsed)) + "s");
+    timeText.setString("Time: " + std::to_string(static_cast<int>(gameDataRef->timeElapsed)) + "s");
     timeText.setOrigin(timeText.getLocalBounds().width / 2.0f, timeText.getLocalBounds().height / 2.0f);
     timeText.setPosition(viewCenter.x, viewCenter.y); // Below coins
     window.draw(timeText);
 
     // Instructions text
-    instructionsText.setString(GetLocalizedMenuText("pressEnterToContinue"));
+    instructionsText.setString("Press ENTER to continue");
     instructionsText.setOrigin(instructionsText.getLocalBounds().width / 2.0f, instructionsText.getLocalBounds().height / 2.0f);
     instructionsText.setPosition(viewCenter.x, viewCenter.y + 150); // Below stats
     window.draw(instructionsText);
@@ -1164,14 +1057,14 @@ void GameMenu::initializePauseMenuActions() {
         return;
     }
     items.clear();
-    addMenuItem(GetLocalizedMenuText("continueGame"), [this]() {
+    addMenuItem("Continue", [this]() {
         gameDataRef->paused = false;
         gameDataRef->music.play();
     });
-    addMenuItem(GetLocalizedMenuText("optionsMenu"), [this]() {
+    addMenuItem("Options", [this]() {
         setState(GameMenuState::OPTIONS);
     });
-    addMenuItem(GetLocalizedMenuText("exitToMainMenu"), [this]() {
+    addMenuItem("Exit to Main Menu", [this]() {
         gameDataRef->paused = false;
         gameDataRef->isInMenu = true;
         gameDataRef->currentLevel = 0; // Reset level
@@ -1179,7 +1072,7 @@ void GameMenu::initializePauseMenuActions() {
         gameDataRef->gameMenu.setState(GameMenuState::MAIN_MENU); // Set menu state to main menu
         gameDataRef->gameMenu.initializeActions(gameDataRef); // Reinitialize main menu items
     });
-    addMenuItem(GetLocalizedMenuText("exit"), []() {
+    addMenuItem("Exit", []() {
         exit(0);
     });
     selectedIndex = 0; // Reset selected index
@@ -1216,24 +1109,24 @@ void GameMenu::initializeOptionsActions() {
     items.clear();
 
     // Initialize Menu Items for navigation (Volume, Brightness, Back)
-    addMenuItem(GetLocalizedMenuText("musicToggle"), [this]() {
+    addMenuItem(std::string("Music: ") + (gameDataRef->isMusicOn ? "ON" : "OFF"), [this]() {
         // Toggle music here, update the label (volumeLabel)
         if (gameDataRef->music.getStatus() == sf::Music::Playing) {
             gameDataRef->music.pause();
-            volumeLabel.setString(GetLocalizedMenuText("toggleMusicOff"));
+            volumeLabel.setString("Music: OFF");
         } else {
             gameDataRef->music.play();
-            volumeLabel.setString(GetLocalizedMenuText("toggleMusicOn"));
+            volumeLabel.setString("Music: ON");
         }
     });
-    addMenuItem(GetLocalizedMenuText("changeVolume"), [this]() {
+    addMenuItem("Change Volume (NYI)", [this]() {
         activeSlider = OptionSliderType::VOLUME; // Change this to VOLUME slider, as it's the first option
     });
     // Remove the Brightness menu item, as the brightness slider is always active below
     // addMenuItem(GetLocalizedMenuText("brightnessOption"), [this]() {
     //     activeSlider = OptionSliderType::BRIGHTNESS;
     // });
-    addMenuItem(GetLocalizedMenuText("backButton"), [this]() {
+    addMenuItem("Back", [this]() {
         activeSlider = OptionSliderType::NONE; // Deactivate slider when going back
         setState(previousState); // Return to previous state
     });

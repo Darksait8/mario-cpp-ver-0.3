@@ -18,15 +18,15 @@ const float jumpVelocity = 10.0f;
 void Mario::Begin() {
   runAnimation =
       Animation(0.45f, {
-                           AnimFrame(0.30f, Resources::textures["run3.png"]),
-                           AnimFrame(0.15f, Resources::textures["run2.png"]),
-                           AnimFrame(0.00f, Resources::textures["run1.png"]),
+                           AnimFrame(0.30f, Resources::getTexture("run3.png")),
+                           AnimFrame(0.15f, Resources::getTexture("run2.png")),
+                           AnimFrame(0.00f, Resources::getTexture("run1.png")),
                        });
 
-  jumpSound.setBuffer(Resources::sounds["jump.wav"]);
+  jumpSound.setBuffer(Resources::getSound("jump.wav"));
   jumpSound.setVolume(20);
 
-  deathSound.setBuffer(Resources::sounds["mario-smert.mp3"]);
+  deathSound.setBuffer(Resources::getSound("mario-smert.mp3"));
   deathSound.setVolume(20);
 
   fixtureData.listener = this;
@@ -97,7 +97,7 @@ void Mario::Update(float deltaTime) {
       // No need to update visual position from physics body here in Mario::Update
 
       if (isSlidingDownFlag) {
-          textureToDraw = Resources::textures["slide.png"];
+          textureToDraw = Resources::getTexture("slide.png");
           facingLeft = false;
       } else if (isVictoryDancing) {
           victoryDanceTimer += deltaTime;
@@ -106,9 +106,9 @@ void Mario::Update(float deltaTime) {
               victoryWalkComplete = true;
           }
           if (static_cast<int>(victoryDanceTimer * 5) % 2 == 0) {
-              textureToDraw = Resources::textures["victory1.png"];
+              textureToDraw = Resources::getTexture("victory1.png");
           } else {
-              textureToDraw = Resources::textures["victory2.png"];
+              textureToDraw = Resources::getTexture("victory2.png");
           }
       } else { // Mario is walking
           runAnimation.Update(deltaTime);
@@ -221,11 +221,11 @@ void Mario::Update(float deltaTime) {
   else if (velocity.x > 0.02f)
     facingLeft = false;
   else
-    textureToDraw = Resources::textures["idle.png"];
+    textureToDraw = Resources::getTexture("idle.png");
 
   // Изменяем текстуру только если не летим
   if (!isGrounded && !isFlying)
-    textureToDraw = Resources::textures["jump.png"];
+    textureToDraw = Resources::getTexture("jump.png");
 
   body->SetLinearVelocity(velocity);
 
@@ -239,7 +239,7 @@ void Mario::Update(float deltaTime) {
   // Check if Mario falls off the bottom of the level
   if (position.y > 32.0f && !isDying) {
       isDying = true;
-      textureToDraw = Resources::textures["marioDeath.png"];
+      textureToDraw = Resources::getTexture("marioDeath.png");
       body->SetGravityScale(0.5f);
       deathSpeedY = -5.0f; // Give him a little upward bounce for death animation
   }
@@ -301,7 +301,7 @@ void Mario::OnBeginContact(b2::Fixture *self, b2::Fixture *other) {
     } else { // Контакт с любой другой частью тела врага (не верхним сенсором)
       // std::cout << "Mario touched enemy and should die!" << std::endl;
       isDying = true;
-      textureToDraw = Resources::textures["marioDeath.png"];
+      textureToDraw = Resources::getTexture("marioDeath.png");
       body->SetGravityScale(0.5f);
       deathSpeedY = -5.0f;
     }

@@ -40,7 +40,7 @@ public:
 	// Перемещаем topFlagData в public
 	FixtureData* topFlagData = nullptr; // Pointer to the FixtureData of the top flag block
 
-	sf::Sprite backgroundSprite; // Добавляем фоновый спрайт
+	// sf::Sprite backgroundSprite; // Удаляю дублирующее объявление
 
 private:
 	sf::Sprite backgroundSprite; // Добавляем фоновый спрайт

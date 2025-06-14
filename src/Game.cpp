@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <SFML/Audio.hpp>
 #include <iostream>
+#include <windows.h>
 
 class Coin; // Forward declaration
 
@@ -38,9 +39,7 @@ void Restart() {
     data->music.play();
   } else {
     // Жизни закончились, устанавливаем флаг Game Over
-    if (Resources::sounds.count("mario-smert.mp3")) {
-      data->deathSound.play(); // Воспроизводим звук смерти через член структуры Data
-    }
+    data->deathSound.setBuffer(Resources::getSound("mario-smert.mp3"));
     data->isGameOver = true;
     data->music.stop(); // Останавливаем фоновую музыку
   }
@@ -89,6 +88,60 @@ void StartNewGame() {
 }
 
 void Begin(sf::RenderWindow& window) {
+  // СНАЧАЛА загружаем все текстуры и звуки
+  for (auto &file :
+       std::filesystem::directory_iterator("resources/textures/")) {
+    if (file.is_regular_file() && (file.path().extension() == ".png" ||
+                                   file.path().extension() == ".jpg")) {
+      std::string filename = file.path().filename().string();
+      sf::Image tempImage; // Создаем временный объект sf::Image
+      if (!tempImage.loadFromFile(file.path().string())) {
+          std::cerr << "Error: Failed to load image data for texture: " << filename << std::endl;
+          continue; // Пропускаем эту текстуру, если изображение не загружено
+      }
+      if (tempImage.getSize().x == 0 || tempImage.getSize().y == 0) {
+          std::cerr << "Error: Image data for texture is empty: " << filename << std::endl;
+          continue; // Пропускаем эту текстуру, если изображение пусто
+      }
+
+      sf::Texture tempTexture; // Создаем временную текстуру
+      if (tempTexture.loadFromImage(tempImage)) {
+          Resources::getTexture(filename) = std::move(tempTexture); // Перемещаем загруженную текстуру в карту ресурсов
+          std::cout << "Loaded texture: " << filename << std::endl;
+      } else {
+          std::cerr << "Failed to load texture from image for: " << filename << std::endl;
+      }
+    }
+  }
+
+  if (std::filesystem::exists("./resources/textures/death.jpg")) {
+      sf::Image deathImage; // Временный объект sf::Image для death.jpg
+      if (!deathImage.loadFromFile("./resources/textures/death.jpg")) {
+          std::cerr << "Error: Failed to load image data for death.jpg." << std::endl;
+      } else if (deathImage.getSize().x == 0 || deathImage.getSize().y == 0) {
+          std::cerr << "Error: Image data for death.jpg is empty." << std::endl;
+      } else {
+          sf::Texture deathTexture; // Временная текстура для death.jpg
+          if (deathTexture.loadFromImage(deathImage)) {
+              Resources::getTexture("death.jpg") = std::move(deathTexture);
+              std::cout << "Loaded texture: death.jpg" << std::endl;
+          } else {
+              std::cerr << "Failed to load texture from image for death.jpg." << std::endl;
+          }
+      }
+  }
+
+  for (auto &file :
+       std::filesystem::directory_iterator("./resources/sounds/")) {
+    if (file.is_regular_file() && (file.path().extension() == ".ogg" ||
+                                   file.path().extension() == ".wav" ||
+                                   file.path().extension() == ".mp3")) {
+      Resources::getSound(file.path().filename().string()).loadFromFile(
+          file.path().string());
+    }
+  }
+
+  // Теперь создаём data и всё остальное
   data = new Data();
   data->window = &window; // Инициализируем указатель на окно
   data->window->setActive(true); // Убеждаемся, что контекст окна активен для операций SFML
@@ -118,65 +171,7 @@ void Begin(sf::RenderWindow& window) {
   data->backgroundDimmer.setSize(sf::Vector2f(data->window->getDefaultView().getSize().x, data->window->getDefaultView().getSize().y));
   data->backgroundDimmer.setFillColor(sf::Color(0, 0, 0, 0)); // Прозрачный черный для начала
 
-  for (auto &file :
-       std::filesystem::directory_iterator("resources/textures/")) {
-    if (file.is_regular_file() && (file.path().extension() == ".png" ||
-                                   file.path().extension() == ".jpg")) {
-      std::string filename = file.path().filename().string();
-      sf::Image tempImage; // Создаем временный объект sf::Image
-      if (!tempImage.loadFromFile(file.path().string())) {
-          std::cerr << "Error: Failed to load image data for texture: " << filename << std::endl;
-          continue; // Пропускаем эту текстуру, если изображение не загружено
-      }
-      if (tempImage.getSize().x == 0 || tempImage.getSize().y == 0) {
-          std::cerr << "Error: Image data for texture is empty: " << filename << std::endl;
-          continue; // Пропускаем эту текстуру, если изображение пусто
-      }
-
-      sf::Texture tempTexture; // Создаем временную текстуру
-      if (tempTexture.loadFromImage(tempImage)) {
-          Resources::textures[filename] = std::move(tempTexture); // Перемещаем загруженную текстуру в карту ресурсов
-          std::cout << "Loaded texture: " << filename << std::endl;
-      } else {
-          std::cerr << "Failed to load texture from image for: " << filename << std::endl;
-      }
-    }
-  }
-
-  // Загружаем текстуру Game Over (death.jpg)
-  if (std::filesystem::exists("./resources/textures/death.jpg")) {
-      sf::Image deathImage; // Временный объект sf::Image для death.jpg
-      if (!deathImage.loadFromFile("./resources/textures/death.jpg")) {
-          std::cerr << "Error: Failed to load image data for death.jpg." << std::endl;
-      } else if (deathImage.getSize().x == 0 || deathImage.getSize().y == 0) {
-          std::cerr << "Error: Image data for death.jpg is empty." << std::endl;
-      } else {
-          sf::Texture deathTexture; // Временная текстура для death.jpg
-          if (deathTexture.loadFromImage(deathImage)) {
-              Resources::textures["death.jpg"] = std::move(deathTexture);
-              std::cout << "Loaded texture: death.jpg" << std::endl;
-  } else {
-              std::cerr << "Failed to load texture from image for death.jpg." << std::endl;
-          }
-      }
-  }
-
-  // Инициализация фонового спрайта карты после загрузки всех текстур
-  // data->map.InitializeBackground(); // This line is removed as the function is no longer needed.
-
-  for (auto &file :
-       std::filesystem::directory_iterator("./resources/sounds/")) {
-    if (file.is_regular_file() && (file.path().extension() == ".ogg" ||
-                                   file.path().extension() == ".wav" ||
-                                   file.path().extension() == ".mp3")) {
-      Resources::sounds[file.path().filename().string()].loadFromFile(
-          file.path().string());
-    }
-  }
-
-  if (Resources::sounds.count("mario-smert.mp3")) {
-      data->deathSound.setBuffer(Resources::sounds["mario-smert.mp3"]);
-  }
+  data->deathSound.setBuffer(Resources::getSound("mario-smert.mp3"));
 
   data->music.openFromFile("./resources/sounds/music.ogg");
   data->music.setLoop(true);
@@ -253,6 +248,14 @@ void Begin(sf::RenderWindow& window) {
   data->languageButtonText.setOutlineColor(sf::Color::Black);
   data->languageButtonText.setOutlineThickness(1.0f);
 
+  // Автоматический выбор языка системы
+  LANGID langId = GetUserDefaultUILanguage();
+  if (PRIMARYLANGID(langId) == LANG_RUSSIAN) {
+      data->currentLanguage = Language::RUSSIAN;
+  } else {
+      data->currentLanguage = Language::ENGLISH;
+  }
+
   UpdateLocalizedStrings(); // Call to set initial localized strings AFTER window is initialized
 
   Restart();
@@ -298,9 +301,9 @@ void Update(float deltaTime) {
           data->mario.facingLeft = false; // Ensure facing right
 
           // Play victory sound if available, only once
-          if (Resources::sounds.count("victory.wav") && !data->isVictory) {
+          if (!data->isVictory) {
               sf::Sound victorySound;
-              victorySound.setBuffer(Resources::sounds["victory.wav"]);
+              victorySound.setBuffer(Resources::getSound("victory.wav"));
               victorySound.play();
               data->isVictory = true; // Set flag to indicate sound has played
           }
@@ -314,7 +317,7 @@ void Update(float deltaTime) {
            int flagRow = data->map.topFlagData->mapY;
            int lowestFlagpoleRow = flagRow;
            for (int y = flagRow + 1; y < data->mario.mapInstance->grid[flagColumn].size(); ++y) {
-               if (data->mario.mapInstance->grid[flagColumn][y] == &Resources::textures["flaghtock.png"]) {
+               if (data->mario.mapInstance->grid[flagColumn][y] == &Resources::getTexture("flaghtock.png")) {
                    lowestFlagpoleRow = y;
                } else {
                   break;
@@ -380,7 +383,7 @@ void Update(float deltaTime) {
 
   // Handle block breaking
     if (data->mario.shouldBreakBlock) {
-      data->map.BreakBlock(data->mario.blockToBreakX, data->mario.blockToBreakY, &Resources::textures["nomoney.png"]);
+      data->map.BreakBlock(data->mario.blockToBreakX, data->mario.blockToBreakY, &Resources::getTexture("nomoney.png"));
       
       if (data->mario.bodyToBreak) {
           data->mario.bodyToBreak->SetType(b2::BodyType::staticBody);
@@ -636,8 +639,7 @@ std::string GetLocalizedText(const std::string& key) {
 void End() {
   data->gameMenu.saveUsers(); // Сохраняем данные пользователей при завершении
   delete data;
-  Resources::textures.clear();
-  Resources::sounds.clear();
+  Resources::clear();
 }
 
 void UpdateLocalizedStrings() {

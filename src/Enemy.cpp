@@ -28,8 +28,8 @@ struct GroundCheckCallback : public b2::QueryCallback {
 void Enemy::Begin() {
   animation =
       Animation(0.5f, {
-                          AnimFrame(0.25f, Resources::textures["enemy2.png"]),
-                          AnimFrame(0.00f, Resources::textures["enemy1.png"]),
+                          AnimFrame(0.25f, Resources::getTexture("enemy2.png")),
+                          AnimFrame(0.00f, Resources::getTexture("enemy1.png")),
                       });
 
   tag = "enemy";
