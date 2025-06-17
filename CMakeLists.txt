@@ -29,6 +29,11 @@ file(GLOB SOURCES "src/*.cpp" "src/*.h")
 # You only need to add your sources here.
 add_executable(MarioGame ${SOURCES})
 
+# Force MSVC to compile source files as UTF-8 to correctly handle wide string literals
+if(MSVC)
+    target_compile_options(MarioGame PRIVATE /utf-8)
+endif()
+
 # This whole way you were adding SFML and Box2D is basically bad. You should never use your own PC's
 # paths here. The purpose of a build system is to allow it to run on multiple platforms.
 # Using something like FetchContent or git submodules would be better. I'll explain how to use the

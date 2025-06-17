@@ -25,7 +25,7 @@ void DeleteObject(Object *object);
 
 void AddScore(int scoreToAdd);
 
-std::string GetLocalizedText(const std::string& key); // Declaration for localized text helper
+sf::String GetLocalizedText(const std::string& key); // Declaration for localized text helper
 void UpdateLocalizedStrings(); // Declaration for function to update all localized strings
 
 enum class Language {
@@ -43,14 +43,14 @@ struct Data {
   GameMenu gameMenu{};
 
   sf::Image mapImage{};
-  sf::Font font{};
-  sf::Text coinsText{"Coins", font};
+  sf::Font font;
+  sf::Text coinsText;
   sf::Text coinsValueText;
-  sf::Text scoreText{"Score", font};
+  sf::Text scoreText;
   sf::Text scoreValueText;
-  sf::Text livesText{"Lives", font};
+  sf::Text livesText;
   sf::Text livesValueText;
-  sf::Text timeText{"Time", font};
+  sf::Text timeText;
   sf::Text timeValueText;
   sf::RectangleShape backgroundShape{sf::Vector2f(1.0f, 1.0f)};
   sf::RectangleShape backgroundDimmer;
@@ -78,11 +78,11 @@ struct Data {
 
   sf::RenderWindow *window;
 
-  Language currentLanguage = Language::ENGLISH; // Default to English
-  std::map<std::string, std::string> englishStrings; // Map for English strings
-  std::map<std::string, std::string> russianStrings; // Map for Russian strings
+  // Language currentLanguage = Language::ENGLISH; // Default to English
+  // std::map<std::string, sf::String> englishStrings; // Map for English strings
+  // std::map<std::string, sf::String> russianStrings; // Map for Russian strings
 
-  sf::Text languageButtonText; // Text for language toggle button
+  // sf::Text languageButtonText; // Text for language toggle button
 };
 
 static Data *data;

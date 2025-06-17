@@ -149,23 +149,23 @@ void Begin(sf::RenderWindow& window) {
   data->gameMenu.initializeActions(data); // Инициализируем действия меню здесь
   data->gameMenu.loadUsers(); // Загружаем данные пользователей при запуске
 
-  // Populate English strings
-  data->englishStrings["coinsText"] = "Coins";
-  data->englishStrings["scoreText"] = "Score";
-  data->englishStrings["livesText"] = "Lives";
-  data->englishStrings["timeText"] = "Time";
-  data->englishStrings["gameOverText"] = "GAME OVER";
-  data->englishStrings["restartOrExitText"] = "Press R to Restart or ESC to Exit";
-  data->englishStrings["languageButtonText_EN"] = "RU"; // Button text for English locale
+  // Populate English strings - REMOVED (now hardcoded Russian)
+  // data->englishStrings["coinsText"] = sf::String(L"монеты");
+  // data->englishStrings["scoreText"] = sf::String(L"очки");
+  // data->englishStrings["livesText"] = sf::String(L"жизни");
+  // data->englishStrings["timeText"] = sf::String(L"время");
+  // data->englishStrings["gameOverText"] = sf::String(L"ИГРА ОКОНЧЕНА");
+  // data->englishStrings["restartOrExitText"] = sf::String(L"нажмите R для рестарта или ESC для выхода");
+  // data->englishStrings["languageButtonText_EN"] = sf::String(L"RU"); // Button text for English locale
 
-  // Populate Russian strings
-  data->russianStrings["coinsText"] = "Монеты";
-  data->russianStrings["scoreText"] = "Очки";
-  data->russianStrings["livesText"] = "Жизни";
-  data->russianStrings["timeText"] = "Время";
-  data->russianStrings["gameOverText"] = "ИГРА ОКОНЧЕНА";
-  data->russianStrings["restartOrExitText"] = "Нажмите R для перезапуска или ESC для выхода";
-  data->russianStrings["languageButtonText_RU"] = "EN"; // Button text for Russian locale
+  // Populate Russian strings - REMOVED (now hardcoded Russian)
+  // data->russianStrings["coinsText"] = sf::String(L"монеты");
+  // data->russianStrings["scoreText"] = sf::String(L"очки");
+  // data->russianStrings["livesText"] = sf::String(L"жизни");
+  // data->russianStrings["timeText"] = sf::String(L"время");
+  // data->russianStrings["gameOverText"] = sf::String(L"ИГРА ОКОНЧЕНА");
+  // data->russianStrings["restartOrExitText"] = sf::String(L"нажмите R для рестарта или ESC для выхода");
+  // data->russianStrings["languageButtonText_RU"] = sf::String(L"EN"); // Button text for Russian locale
 
   // Initialize backgroundDimmer
   data->backgroundDimmer.setSize(sf::Vector2f(data->window->getDefaultView().getSize().x, data->window->getDefaultView().getSize().y));
@@ -177,10 +177,16 @@ void Begin(sf::RenderWindow& window) {
   data->music.setLoop(true);
   data->music.setVolume(25);
 
-  if (!data->font.loadFromFile("./resources/font.ttf")) {
-      std::cerr << "Error: Failed to load font from ./resources/font.ttf" << std::endl;
+  // Загрузка шрифта
+  if (!data->font.loadFromFile("C:/Users/User/Desktop/mario-cpp-ver-0.3/resources/troika.otf")) {
+    std::cerr << "Error loading font resources/troika.otf" << std::endl;
+    std::cout << "DEBUG: Failed to load font resources/troika.otf" << std::endl;
+    return;
   }
+  std::cout << "DEBUG: Successfully loaded font resources/troika.otf" << std::endl;
 
+  // Устанавливаем шрифт для всех объектов sf::Text после его успешной загрузки
+  data->coinsText.setFont(data->font);
   data->coinsText.setFillColor(sf::Color::White);
   data->coinsText.setOutlineColor(sf::Color::Black);
   data->coinsText.setOutlineThickness(1.0f);
@@ -241,22 +247,22 @@ void Begin(sf::RenderWindow& window) {
       std::cout << "DEBUG: mapImage loaded successfully. Size: " << data->mapImage.getSize().x << "x" << data->mapImage.getSize().y << std::endl;
   }
 
-  // Initialize language button text
-  data->languageButtonText.setFont(data->font);
-  data->languageButtonText.setCharacterSize(30);
-  data->languageButtonText.setFillColor(sf::Color::White);
-  data->languageButtonText.setOutlineColor(sf::Color::Black);
-  data->languageButtonText.setOutlineThickness(1.0f);
+  // Initialize language button text - REMOVED (not needed with hardcoded Russian)
+  // data->languageButtonText.setFont(data->font);
+  // data->languageButtonText.setCharacterSize(30);
+  // data->languageButtonText.setFillColor(sf::Color::White);
+  // data->languageButtonText.setOutlineColor(sf::Color::Black);
+  // data->languageButtonText.setOutlineThickness(1.0f);
 
-  // Автоматический выбор языка системы
-  LANGID langId = GetUserDefaultUILanguage();
-  if (PRIMARYLANGID(langId) == LANG_RUSSIAN) {
-      data->currentLanguage = Language::RUSSIAN;
-  } else {
-      data->currentLanguage = Language::ENGLISH;
-  }
+  // Автоматический выбор языка системы - REMOVED
+  // LANGID langId = GetUserDefaultUILanguage();
+  // if (PRIMARYLANGID(langId) == LANG_RUSSIAN) {
+  //     data->currentLanguage = Language::RUSSIAN;
+  // } else {
+  //     data->currentLanguage = Language::ENGLISH;
+  // }
 
-  UpdateLocalizedStrings(); // Call to set initial localized strings AFTER window is initialized
+  // UpdateLocalizedStrings(); // Call to set initial localized strings AFTER window is initialized - REMOVED
 
   Restart();
 }
@@ -463,13 +469,13 @@ void Render(Renderer &renderer, sf::RenderWindow& window) {
 
       renderer.target.draw(data->backgroundDimmer); // Затемняем экран
 
-      sf::Text gameOverText(GetLocalizedText("gameOverText"), data->font, 60);
+      sf::Text gameOverText(sf::String(L"ИГРА ОКОНЧЕНА"), data->font, 60);
       gameOverText.setFillColor(sf::Color::Red);
       gameOverText.setOrigin(gameOverText.getLocalBounds().width / 2, gameOverText.getLocalBounds().height / 2);
       gameOverText.setPosition(renderer.target.getSize().x / 2, renderer.target.getSize().y / 2 - 50);
       renderer.Draw(gameOverText);
 
-      sf::Text restartText(GetLocalizedText("restartOrExitText"), data->font, 24);
+      sf::Text restartText(sf::String(L"нажмите R для рестарта или ESC для выхода"), data->font, 24);
       restartText.setFillColor(sf::Color::White);
       restartText.setOrigin(restartText.getLocalBounds().width / 2, restartText.getLocalBounds().height / 2);
       restartText.setPosition(renderer.target.getSize().x / 2, renderer.target.getSize().y / 2 + 50);
@@ -501,6 +507,7 @@ void RenderUI(Renderer &renderer) {
       return;
   }
 
+  // Отладочный вывод для проверки шрифта
   // Сохраняем текущий вид UI
   sf::View originalUIView = renderer.target.getView();
 
@@ -524,7 +531,7 @@ void RenderUI(Renderer &renderer) {
   float segmentCenter4 = segmentWidth * 3.5f; // Center of the fourth segment
 
   // SCORE - Centered in the first segment
-  data->scoreText.setString("SCORE");
+  data->scoreText.setString(sf::String(L"ОЧКИ"));
   data->scoreText.setOrigin(data->scoreText.getLocalBounds().width / 2.0f, 0); // Center align label
   data->scoreText.setPosition(segmentCenter1, topLabelY);
   renderer.Draw(data->scoreText);
@@ -535,7 +542,7 @@ void RenderUI(Renderer &renderer) {
   renderer.Draw(data->scoreValueText);
 
   // COINS - Centered in the second segment
-  data->coinsText.setString("COINS");
+  data->coinsText.setString(sf::String(L"монеты"));
   data->coinsText.setOrigin(data->coinsText.getLocalBounds().width / 2.0f, 0); // Center align label
   data->coinsText.setPosition(segmentCenter2, topLabelY);
   renderer.Draw(data->coinsText);
@@ -546,7 +553,7 @@ void RenderUI(Renderer &renderer) {
   renderer.Draw(data->coinsValueText);
 
   // LIVES - Centered in the third segment
-  data->livesText.setString("LIVES");
+  data->livesText.setString(sf::String(L"ЖИЗНИ"));
   data->livesText.setOrigin(data->livesText.getLocalBounds().width / 2.0f, 0); // Center align label
   data->livesText.setPosition(segmentCenter3, topLabelY);
   renderer.Draw(data->livesText);
@@ -557,7 +564,7 @@ void RenderUI(Renderer &renderer) {
   renderer.Draw(data->livesValueText);
 
   // TIME - Centered in the fourth segment
-  data->timeText.setString("TIME");
+  data->timeText.setString(sf::String(L"ВРЕМЯ"));
   data->timeText.setOrigin(data->timeText.getLocalBounds().width / 2.0f, 0); // Center align label
   data->timeText.setPosition(segmentCenter4, topLabelY);
   renderer.Draw(data->timeText);
@@ -567,8 +574,8 @@ void RenderUI(Renderer &renderer) {
   data->timeValueText.setPosition(segmentCenter4, topValueY);
   renderer.Draw(data->timeValueText);
 
-  // Render language button
-  renderer.Draw(data->languageButtonText);
+  // Render language button - REMOVED (not needed with hardcoded Russian)
+  // renderer.Draw(data->languageButtonText);
 
   // Restore original view
   renderer.target.setView(originalUIView);
@@ -581,20 +588,20 @@ void HandleEvent(sf::Event event) {
     return;
   }
 
-  // Handle language button click
-  if (event.type == sf::Event::MouseButtonPressed) {
-      if (event.mouseButton.button == sf::Mouse::Left) {
-          sf::Vector2f mousePos = data->window->mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y), data->camera.GetUIView());
-          if (data->languageButtonText.getGlobalBounds().contains(mousePos)) {
-              if (data->currentLanguage == Language::ENGLISH) {
-                  data->currentLanguage = Language::RUSSIAN;
-              } else {
-                  data->currentLanguage = Language::ENGLISH;
-              }
-              UpdateLocalizedStrings(); // Update all displayed texts
-          }
-      }
-  }
+  // Handle language button click - REMOVED
+  // if (event.type == sf::Event::MouseButtonPressed) {
+  //     if (event.mouseButton.button == sf::Mouse::Left) {
+  //         sf::Vector2f mousePos = data->window->mapPixelToCoords(sf::Vector2i(event.mouseButton.x, event.mouseButton.y), data->camera.GetUIView());
+  //         if (data->languageButtonText.getGlobalBounds().contains(mousePos)) {
+  //             if (data->currentLanguage == Language::ENGLISH) {
+  //                 data->currentLanguage = Language::RUSSIAN;
+  //             } else {
+  //                 data->currentLanguage = Language::ENGLISH;
+  //             }
+  //             UpdateLocalizedStrings(); // Update all displayed texts
+  //         }
+  //     }
+  // }
 
   // Если игра не в меню (т.е. идет геймплей или Game Over/Victory Screen)
   if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
@@ -620,21 +627,21 @@ void DeleteObject(Object *object) {
 
 void AddScore(int scoreToAdd) { data->score += scoreToAdd; }
 
-// Helper function to get localized text
-std::string GetLocalizedText(const std::string& key) {
-    if (!data) return ""; // Ensure data is not null
-
-    if (data->currentLanguage == Language::ENGLISH) {
-        if (data->englishStrings.count(key)) {
-            return data->englishStrings[key];
-  }
-    } else { // RUSSIAN
-        if (data->russianStrings.count(key)) {
-            return data->russianStrings[key];
-        }
-    }
-    return "KEY_NOT_FOUND"; // Fallback for missing keys
-}
+// Helper function to get localized text - REMOVED
+// sf::String GetLocalizedText(const std::string& key) {
+//     if (!data) return sf::String(L"");
+// 
+//     if (data->currentLanguage == Language::ENGLISH) {
+//         if (data->englishStrings.count(key)) {
+//             return data->englishStrings[key];
+//         }
+//     } else { // RUSSIAN
+//         if (data->russianStrings.count(key)) {
+//             return data->russianStrings[key];
+//         }
+//     }
+//     return sf::String(L"KEY_NOT_FOUND");
+// }
 
 void End() {
   data->gameMenu.saveUsers(); // Сохраняем данные пользователей при завершении
@@ -642,16 +649,16 @@ void End() {
   Resources::clear();
 }
 
-void UpdateLocalizedStrings() {
-    // Update game UI texts
-    if (data) {
-        data->coinsText.setString(GetLocalizedText("coinsText"));
-        data->scoreText.setString(GetLocalizedText("scoreText"));
-        data->livesText.setString(GetLocalizedText("livesText"));
-        data->timeText.setString(GetLocalizedText("timeText"));
-        // Update language button text based on current language
-        data->languageButtonText.setString(GetLocalizedText(data->currentLanguage == Language::ENGLISH ? "languageButtonText_EN" : "languageButtonText_RU"));
-        // Position the language button in the bottom left corner
-        data->languageButtonText.setPosition(10, data->window->getSize().y - data->languageButtonText.getLocalBounds().height - 10);
-    }
-}
+// void UpdateLocalizedStrings() { // REMOVED
+//     // Update game UI texts
+//     if (data) {
+//         data->coinsText.setString(GetLocalizedText("coinsText"));
+//         data->scoreText.setString(GetLocalizedText("scoreText"));
+//         data->livesText.setString(GetLocalizedText("livesText"));
+//         data->timeText.setString(GetLocalizedText("timeText"));
+//         // Update language button text based on current language
+//         data->languageButtonText.setString(GetLocalizedText(data->currentLanguage == Language::ENGLISH ? "languageButtonText_EN" : "languageButtonText_RU"));
+//         // Position the language button in the bottom left corner
+//         data->languageButtonText.setPosition(10, data->window->getSize().y - data->languageButtonText.getLocalBounds().height - 10);
+//     }
+// }

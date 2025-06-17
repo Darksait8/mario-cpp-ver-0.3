@@ -54,7 +54,7 @@ public:
     sf::Text text;
     std::function<void()> action;
 
-    GameMenuItem(const std::string& textString, sf::Font& font, std::function<void()> action);
+    GameMenuItem(const sf::String& textString, sf::Font& font, std::function<void()> action);
     void execute() const;
 };
 
@@ -65,7 +65,7 @@ public:
     void update();
     void render(sf::RenderWindow& window);
     void handleInput(sf::Event event);
-    void addMenuItem(const std::string& textString, std::function<void()> action);
+    void addMenuItem(const sf::String& textString, std::function<void()> action);
     void setState(GameMenuState newState);
     GameMenuState getCurrentState() const;
 
@@ -74,7 +74,7 @@ public:
 private:
     std::vector<GameMenuItem> items;
     GameMenuState currentState;
-    int selectedIndex;
+    size_t selectedIndex;
     GameMenuState previousState;
 
     sf::Sprite backgroundSprite;
