@@ -89,8 +89,8 @@ GameMenu::GameMenu() : currentState(GameMenuState::AUTH), selectedIndex(0), game
     registerButtonRect.setOutlineColor(sf::Color::White);
 
     registerButtonText.setFont(font);
-    registerButtonText.setString(L"регестрация");
-    registerButtonText.setCharacterSize(36);
+    registerButtonText.setString(L"регстрация");
+    registerButtonText.setCharacterSize(32);
     registerButtonText.setFillColor(sf::Color::White);
 
     activeInputField = InputField::NONE;
@@ -933,17 +933,12 @@ void GameMenu::renderVictoryScreen(sf::RenderWindow& window) {
     backgroundSprite.setPosition(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2); // Позиционируем фон на весь экран
     window.draw(backgroundSprite);
 
-    // Render victory title
-    titleText.setString(L"Победа!");
-    titleText.setOrigin(titleText.getLocalBounds().width / 2.0f, titleText.getLocalBounds().height / 2.0f);
-    titleText.setPosition(viewCenter.x, viewCenter.y - 300); // Higher position for the title
-    window.draw(titleText);
 
     sf::Text scoreText;
     scoreText.setFont(font);
     scoreText.setCharacterSize(40);
     scoreText.setFillColor(sf::Color::White);
-    scoreText.setString("очки: " + std::to_string(gameDataRef->score));
+    scoreText.setString(sf::String(L"очки: ") + std::to_string(gameDataRef->score));
     scoreText.setOrigin(scoreText.getLocalBounds().width / 2.0f, scoreText.getLocalBounds().height / 2.0f);
     scoreText.setPosition(viewCenter.x, viewCenter.y - 100); // Below title
     window.draw(scoreText);
