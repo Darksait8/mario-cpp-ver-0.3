@@ -10,6 +10,9 @@
 #include <memory>
 #include <cmath>
 #include <random> // Включаем заголовочный файл для случайных чисел
+#include <iostream>
+
+extern Data *data;
 
 // Custom query callback to find MapTile fixtures
 struct GroundCheckCallback : public b2::QueryCallback {
@@ -91,6 +94,15 @@ void Enemy::Update(float deltaTime) {
 
   auto velocity = body->GetLinearVelocity();
 
+  float speedMultiplier = 1.0f;
+  if (data) {
+    switch (data->difficulty) {
+      case ::Difficulty::EASY:   speedMultiplier = 0.5f; break;
+      case ::Difficulty::NORMAL: speedMultiplier = 1.0f; break;
+      case ::Difficulty::HARD:   speedMultiplier = 1.5f; break;
+    }
+  }
+
   // Check for edge before moving
   b2::Vec2 bodyPosition = body->GetPosition();
   float checkDistance = 0.6f; // Check slightly ahead of the enemy
@@ -115,7 +127,7 @@ void Enemy::Update(float deltaTime) {
   if (std::abs(velocity.x) <= 0.02f && !isDead)
     movement *= -1.0f;
 
-  velocity.x = movement;
+  velocity.x = movement * speedMultiplier;
 
   body->SetLinearVelocity(velocity);
 
@@ -134,7 +146,27 @@ void Enemy::Render(Renderer &renderer) {
 
 void Enemy::Die() {
   isDead = true;
-  AddScore(100); // Начисляем 100 очков за убийство врага
+  int scoreToAdd = 100;
+  int coinMultiplier = 1;
+  if (data) {
+    switch (data->difficulty) {
+      case ::Difficulty::EASY:
+        scoreToAdd = 50;
+        coinMultiplier = 1;
+        break;
+      case ::Difficulty::NORMAL:
+        scoreToAdd = 100;
+        coinMultiplier = 1;
+        break;
+      case ::Difficulty::HARD:
+        scoreToAdd = 200;
+        coinMultiplier = 2;
+        break;
+    }
+  }
+  AddScore(scoreToAdd); // Начисляем очки за убийство врага
+  // Если хотите, чтобы за убийство врага давались монеты:
+  // data->mario.coins += 1 * coinMultiplier;
   // Physics::world->DestroyBody(body); // Убираем немедленное удаление тела
 }
 

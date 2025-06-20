@@ -33,6 +33,8 @@ enum class Language {
     RUSSIAN
 };
 
+enum class Difficulty { EASY, NORMAL, HARD };
+
 struct Data {
   Map map{1.0f};
   Camera camera{20.0f};
@@ -77,6 +79,10 @@ struct Data {
   bool startVictoryScreenTimer = false; // Flag to start the timer
 
   sf::RenderWindow *window;
+
+  float enemySpeedMultiplier = 1.0f; // <--- Новая переменная для скорости врагов
+
+  Difficulty difficulty = Difficulty::NORMAL;
 
   // Language currentLanguage = Language::ENGLISH; // Default to English
   // std::map<std::string, sf::String> englishStrings; // Map for English strings

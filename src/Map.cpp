@@ -132,9 +132,9 @@ sf::Vector2f Map::CreateFromImage(const sf::Image &image,
             std::cerr << "Warning: 'flag.png' texture not found in resources. Tile at " << x << "," << y << " will be empty." << std::endl;
         }
       } else if (
-          std::abs(color.r - 255) <= 5 &&
-          std::abs(color.g - 0) <= 5 &&
-          std::abs(color.b - 161) <= 5 &&
+          std::abs(color.r - 255) <= 15 &&
+          std::abs(color.g - 0) <= 15 &&
+          std::abs(color.b - 161) <= 15 &&
           color.a == 255) {
         if (Resources::getTexture("flaghtock.png").getNativeHandle() != 0) {
             grid[x][y] = &Resources::getTexture("flaghtock.png");

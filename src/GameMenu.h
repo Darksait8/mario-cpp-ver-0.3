@@ -13,6 +13,7 @@ struct Data; // Предварительное объявление Data для 
 
 enum class GameMenuState {
     MAIN_MENU,
+    DIFFICULTY_SELECT,
     OPTIONS,
     CREDITS,
     AUTH,
@@ -70,6 +71,7 @@ public:
     GameMenuState getCurrentState() const;
 
     void saveUsers();
+    void renderDifficultySelect(sf::RenderWindow& window);
 
 private:
     std::vector<GameMenuItem> items;
@@ -103,12 +105,12 @@ private:
 
     sf::Text volumeLabel;
     sf::RectangleShape volumeTrack;
-    sf::RectangleShape volumeThumb;
+    sf::CircleShape volumeThumb;
     sf::Text volumeValueText;
 
     sf::Text brightnessLabel;
     sf::RectangleShape brightnessTrack;
-    sf::RectangleShape brightnessThumb;
+    sf::CircleShape brightnessThumb;
     sf::Text brightnessValueText;
 
     // Переменные для кнопок авторизации
@@ -125,6 +127,9 @@ private:
     std::vector<User> users; // List of all registered users
     std::string loggedInUsername; // Stores the username of the logged-in user
     sf::Text messageText; // For displaying messages to the user
+
+    float tempVolume = 100.0f;
+    float tempBrightness = 1.0f;
 
     void renderMainMenu(sf::RenderWindow& window);
     void renderOptions(sf::RenderWindow& window);

@@ -47,7 +47,7 @@ void Restart() {
 
 void StartNewGame() {
     // Reset all relevant game data for a completely new game
-    data->lives = 3; // Starting lives
+    // data->lives = 3; // Starting lives (УБРАНО, чтобы не сбрасывать жизни после выбора сложности)
     data->score = 0;
     data->mario.coins = 0;
     data->timeElapsed = 0.0f;
@@ -88,6 +88,7 @@ void StartNewGame() {
 }
 
 void Begin(sf::RenderWindow& window) {
+  data = new Data(); // САМАЯ ПЕРВАЯ СТРОКА!
   // СНАЧАЛА загружаем все текстуры и звуки
   for (auto &file :
        std::filesystem::directory_iterator("resources/textures/")) {
@@ -142,7 +143,6 @@ void Begin(sf::RenderWindow& window) {
   }
 
   // Теперь создаём data и всё остальное
-  data = new Data();
   data->window = &window; // Инициализируем указатель на окно
   data->window->setActive(true); // Убеждаемся, что контекст окна активен для операций SFML
   data->isInMenu = true; // Начинаем с меню
@@ -339,7 +339,8 @@ void Update(float deltaTime) {
 
           // Once Mario reaches or passes the ground Y, stop sliding
           if (data->mario.position.y >= groundY) {
-              data->mario.position.y = groundY; // Snap to ground
+              const float marioSpriteOffsetY = 16.0f; // Смещение вниз для корректного положения на земле
+              data->mario.position.y = groundY + marioSpriteOffsetY; // Зафиксировать на земле с учетом смещения
               data->mario.isSlidingDownFlag = false; // Stop sliding
               // Start walking right by ensuring a horizontal velocity for Mario's visual position
               // Note: Mario's body is inactive, so we update his position directly
@@ -353,10 +354,10 @@ void Update(float deltaTime) {
               data->victoryScreenTimer = 0.0f;
           }
       } else if (!data->mario.isVictoryDancing) { // If not sliding and not dancing, Mario is walking
-          // Mario has reached the ground (or was already there) and is walking right
           float victoryWalkSpeed = 3.0f;
-          data->mario.position.x += victoryWalkSpeed * deltaTime; // Manually update horizontal position
-          data->mario.position.y = groundY; // Keep Mario on the ground explicitly
+          const float marioSpriteOffsetY =1.0f; // Смещение вниз для корректного положения на земле
+          data->mario.position.x += victoryWalkSpeed * deltaTime;
+          data->mario.position.y = groundY + marioSpriteOffsetY; // ВСЕГДА фиксируем на земле с учетом смещения!
       }
 
       // Update Mario victory sequence (handles sliding, walking, dancing)
@@ -506,18 +507,23 @@ void RenderUI(Renderer &renderer) {
   if (data->isInMenu) { // Если мы в меню, не отрисовываем UI игры
       return;
   }
+  if (data->paused) { // Если игра на паузе, не отрисовываем UI
+      return;
+  }
 
-  // Отладочный вывод для проверки шрифта
   // Сохраняем текущий вид UI
   sf::View originalUIView = renderer.target.getView();
 
   // Устанавливаем вид по умолчанию для отрисовки UI
   renderer.target.setView(renderer.target.getDefaultView());
 
-  // Удалил логику отрисовки затемняющего фона для регулировки яркости отсюда
-  // sf::Uint8 alpha = static_cast<sf::Uint8>((1.0f - data->brightness) * 255);
-  // data->backgroundDimmer.setFillColor(sf::Color(0, 0, 0, alpha));
-  // renderer.target.draw(data->backgroundDimmer);
+  // Затемняющий фон для регулировки яркости (глобально)
+  sf::Vector2f viewSize = renderer.target.getView().getSize();
+  sf::Vector2f viewCenter = renderer.target.getView().getCenter();
+  sf::RectangleShape dimmer(sf::Vector2f(viewSize.x, viewSize.y));
+  dimmer.setFillColor(sf::Color(0, 0, 0, static_cast<sf::Uint8>((1.0f - data->brightness) * 255)));
+  dimmer.setPosition(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2);
+  renderer.target.draw(dimmer);
 
   float windowWidth = renderer.target.getSize().x;
   float topLabelY = 20.0f; // Y position for labels
